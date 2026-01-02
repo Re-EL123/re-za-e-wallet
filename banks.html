@@ -334,37 +334,15 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
-    import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyAWUXQs1W0IBT2J27eEllfT8jPtZD6Fx20",
-      authDomain: "re-el-eed0d.firebaseapp.com",
-      databaseURL: "https://re-el-eed0d-default-rtdb.firebaseio.com",
-      projectId: "re-el-eed0d",
-      storageBucket: "re-el-eed0d.appspot.com",
-      messagingSenderId: "676690470943",
-      appId: "1:676690470943:web:482a707b370383369ecd2a",
-      measurementId: "G-WS35RTNEBP"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const database = getDatabase(app);
-
-    window.firebaseAuth = auth;
-    window.firebaseDatabase = database;
-    window.onAuthStateChanged = onAuthStateChanged;
-    window.dbRef = ref;
-    window.dbGet = get;
-    window.dbSet = set;
-  </script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
   <script type="text/babel">
     const { useState, useEffect } = React;
+
+    const SUPABASE_URL = 'https://bwcjqkfribgfmxklqqow.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3Y2pxa2ZyaWJnZm14a2xxcW93Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkzNzg4MDYsImV4cCI6MjA2NDk1NDgwNn0.W0xdZMQKTlU5y5hGGwlYJD_MqKVMvCCVr3TZwHRvBng';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const SA_BANKS = [
       'ABSA',
@@ -381,10 +359,11 @@
 
     function BanksPage() {
       const [user, setUser] = useState(null);
-      const [userData, setUserData] = useState(null);
-      const [banks, setBanks] = useState([]);
+      const [wallet, setWallet] = useState(null);
+      const [bankAccounts, setBankAccounts] = useState([]);
       const [showModal, setShowModal] = useState(false);
       const [loading, setLoading] = useState(false);
+      const [pageLoading, setPageLoading] = useState(true);
       const [error, setError] = useState('');
       const [success, setSuccess] = useState('');
 
@@ -396,22 +375,40 @@
       const [branchCode, setBranchCode] = useState('');
 
       useEffect(() => {
-        const unsubscribe = window.onAuthStateChanged(window.firebaseAuth, async (currentUser) => {
-          if (currentUser) {
-            setUser(currentUser);
-            
-            const userRef = window.dbRef(window.firebaseDatabase, 'users/' + currentUser.uid);
-            const snapshot = await window.dbGet(userRef);
-            const data = snapshot.val();
-            setUserData(data);
-            setBanks(data?.banks || []);
-            setAccountHolder(data?.fullName || '');
-          } else {
+        const initPage = async () => {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) {
             window.location.href = 'login.html';
+            return;
           }
-        });
+          setUser(session.user);
 
-        return () => unsubscribe();
+          // Fetch wallet
+          const { data: walletData } = await supabase
+            .from('wallets')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+          if (walletData) {
+            setWallet(walletData);
+            setAccountHolder(walletData.full_name || '');
+          }
+
+          // Fetch bank accounts
+          const { data: banksData } = await supabase
+            .from('bank_accounts')
+            .select('*')
+            .eq('user_id', session.user.id)
+            .order('created_at', { ascending: false });
+
+          if (banksData) {
+            setBankAccounts(banksData);
+          }
+
+          setPageLoading(false);
+        };
+        initPage();
       }, []);
 
       const handleAddBank = async (e) => {
@@ -420,24 +417,22 @@
         setLoading(true);
 
         try {
-          const newBank = {
-            name: bankName,
-            accountHolder: accountHolder,
-            accountNumber: accountNumber,
-            accountType: accountType,
-            branchCode: branchCode,
-            addedDate: new Date().toISOString()
-          };
+          const { data: newBank, error: insertError } = await supabase
+            .from('bank_accounts')
+            .insert({
+              user_id: user.id,
+              bank_name: bankName,
+              account_holder: accountHolder,
+              account_number: accountNumber,
+              account_type: accountType,
+              branch_code: branchCode
+            })
+            .select()
+            .single();
 
-          const updatedBanks = [...banks, newBank];
+          if (insertError) throw insertError;
 
-          const userRef = window.dbRef(window.firebaseDatabase, 'users/' + user.uid);
-          await window.dbSet(userRef, {
-            ...userData,
-            banks: updatedBanks
-          });
-
-          setBanks(updatedBanks);
+          setBankAccounts(prev => [newBank, ...prev]);
           setSuccess('Bank account added successfully!');
           
           // Reset form
@@ -459,26 +454,33 @@
         }
       };
 
-      const handleDeleteBank = async (index) => {
+      const handleDeleteBank = async (bankId) => {
         if (!confirm('Are you sure you want to remove this bank account?')) {
           return;
         }
 
         try {
-          const updatedBanks = banks.filter((_, i) => i !== index);
+          const { error: deleteError } = await supabase
+            .from('bank_accounts')
+            .delete()
+            .eq('id', bankId);
 
-          const userRef = window.dbRef(window.firebaseDatabase, 'users/' + user.uid);
-          await window.dbSet(userRef, {
-            ...userData,
-            banks: updatedBanks
-          });
+          if (deleteError) throw deleteError;
 
-          setBanks(updatedBanks);
+          setBankAccounts(prev => prev.filter(b => b.id !== bankId));
         } catch (err) {
           console.error('[v0] Delete bank error:', err);
           alert('Failed to remove bank account. Please try again.');
         }
       };
+
+      if (pageLoading) {
+        return (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+            <div style={{ fontSize: '1.5rem' }}>Loading...</div>
+          </div>
+        );
+      }
 
       return (
         <>
@@ -497,7 +499,7 @@
           </header>
 
           <div className="container">
-            {banks.length === 0 ? (
+            {bankAccounts.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-state-icon">🏦</div>
                 <h3>No bank accounts yet</h3>
@@ -512,23 +514,23 @@
               </div>
             ) : (
               <div className="banks-grid">
-                {banks.map((bank, index) => (
-                  <div key={index} className="bank-card">
+                {bankAccounts.map((bank) => (
+                  <div key={bank.id} className="bank-card">
                     <div className="bank-header">
                       <div className="bank-icon">🏦</div>
                       <button 
                         className="delete-btn"
-                        onClick={() => handleDeleteBank(index)}
+                        onClick={() => handleDeleteBank(bank.id)}
                       >
                         Remove
                       </button>
                     </div>
-                    <div className="bank-name">{bank.name}</div>
+                    <div className="bank-name">{bank.bank_name}</div>
                     <div className="bank-details">
-                      <div><strong>Account Holder:</strong> {bank.accountHolder}</div>
-                      <div><strong>Account Number:</strong> <span className="account-number">{bank.accountNumber}</span></div>
-                      <div><strong>Account Type:</strong> {bank.accountType.charAt(0).toUpperCase() + bank.accountType.slice(1)}</div>
-                      <div><strong>Branch Code:</strong> {bank.branchCode}</div>
+                      <div><strong>Account Holder:</strong> {bank.account_holder}</div>
+                      <div><strong>Account Number:</strong> <span className="account-number">{bank.account_number}</span></div>
+                      <div><strong>Account Type:</strong> {bank.account_type.charAt(0).toUpperCase() + bank.account_type.slice(1)}</div>
+                      <div><strong>Branch Code:</strong> {bank.branch_code}</div>
                     </div>
                   </div>
                 ))}

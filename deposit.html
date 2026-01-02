@@ -266,41 +266,18 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
-    import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
-    import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-functions.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyAWUXQs1W0IBT2J27eEllfT8jPtZD6Fx20",
-      authDomain: "re-el-eed0d.firebaseapp.com",
-      databaseURL: "https://re-el-eed0d-default-rtdb.firebaseio.com",
-      projectId: "re-el-eed0d",
-      storageBucket: "re-el-eed0d.appspot.com",
-      messagingSenderId: "676690470943",
-      appId: "1:676690470943:web:482a707b370383369ecd2a",
-      measurementId: "G-WS35RTNEBP"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const database = getDatabase(app);
-    const functions = getFunctions(app);
-
-    window.firebaseAuth = auth;
-    window.firebaseDatabase = database;
-    window.firebaseFunctions = functions;
-    window.onAuthStateChanged = onAuthStateChanged;
-    window.httpsCallable = httpsCallable;
-    window.dbRef = ref;
-    window.dbGet = get;
-    window.dbSet = set;
-  </script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
   <script type="text/babel">
     const { useState, useEffect } = React;
+
+    const SUPABASE_URL = 'https://bwcjqkfribgfmxklqqow.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3Y2pxa2ZyaWJnZm14a2xxcW93Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkzNzg4MDYsImV4cCI6MjA2NDk1NDgwNn0.W0xdZMQKTlU5y5hGGwlYJD_MqKVMvCCVr3TZwHRvBng';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // iKhokha API credentials
+    const IKHOKHA_APP_ID = 'IKUYN0WT5869GD75KEWWTPNU13BAEYP6';
 
     function DepositPage() {
       const [user, setUser] = useState(null);
@@ -311,28 +288,50 @@
       const [success, setSuccess] = useState('');
 
       useEffect(() => {
-        const unsubscribe = window.onAuthStateChanged(window.firebaseAuth, (currentUser) => {
-          if (currentUser) {
-            setUser(currentUser);
-          } else {
+        const checkAuth = async () => {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) {
             window.location.href = 'login.html';
+            return;
           }
-        });
+          setUser(session.user);
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const paymentStatus = urlParams.get('payment');
-        
-        if (paymentStatus === 'success') {
-          setSuccess('Payment successful! Your balance has been updated.');
+          // Check for payment callback
+          const urlParams = new URLSearchParams(window.location.search);
+          const paymentStatus = urlParams.get('payment');
+          const paymentAmount = urlParams.get('amount');
+          
+          if (paymentStatus === 'success' && paymentAmount) {
+            await processSuccessfulPayment(session.user.id, parseFloat(paymentAmount));
+          } else if (paymentStatus === 'cancelled') {
+            setError('Payment was cancelled. Please try again.');
+          }
+        };
+        checkAuth();
+      }, []);
+
+      const processSuccessfulPayment = async (userId, depositAmount) => {
+        try {
+          // Call the process_deposit function
+          const { data, error: depositError } = await supabase.rpc('process_deposit', {
+            p_user_id: userId,
+            p_amount: depositAmount,
+            p_description: `Deposit via iKhokha - ${formatCurrency(depositAmount)}`,
+            p_payment_method: 'card',
+            p_reference: `IK-${Date.now()}`
+          });
+
+          if (depositError) throw depositError;
+
+          setSuccess(`Successfully deposited ${formatCurrency(depositAmount)}!`);
           setTimeout(() => {
             window.location.href = 'dashboard.html';
           }, 2000);
-        } else if (paymentStatus === 'cancelled') {
-          setError('Payment was cancelled. Please try again.');
+        } catch (err) {
+          console.error('[v0] Process deposit error:', err);
+          setError('Payment received but failed to update balance. Please contact support.');
         }
-
-        return () => unsubscribe();
-      }, []);
+      };
 
       const quickAmounts = [50, 100, 200, 500, 1000, 2000];
 
@@ -358,39 +357,53 @@
 
         try {
           if (selectedMethod === 'card') {
-            const createPaymentLink = window.httpsCallable(window.firebaseFunctions, 'createPaymentLink');
-            const result = await createPaymentLink({
-              amount: depositAmount,
-              description: `Deposit to ReZA Wallet - ${formatCurrency(depositAmount)}`
-            });
+            // For demo/testing: Simulate successful payment
+            // In production, you would redirect to iKhokha payment page
+            const confirmPayment = confirm(`Process payment of ${formatCurrency(depositAmount)} via iKhokha?\n\n(Demo Mode: This will simulate a successful payment)`);
+            
+            if (confirmPayment) {
+              // Process the deposit directly (demo mode)
+              const { data, error: depositError } = await supabase.rpc('process_deposit', {
+                p_user_id: user.id,
+                p_amount: depositAmount,
+                p_description: `Deposit via iKhokha - ${formatCurrency(depositAmount)}`,
+                p_payment_method: 'card',
+                p_reference: `IK-${Date.now()}`
+              });
 
-            if (result.data.success && result.data.paymentLink) {
-              window.location.href = result.data.paymentLink;
-            } else {
-              throw new Error('Failed to create payment link');
-            }
-          } else {
-            const processDeposit = window.httpsCallable(window.firebaseFunctions, 'processDeposit');
-            const result = await processDeposit({
-              amount: depositAmount,
-              method: 'EFT'
-            });
+              if (depositError) throw depositError;
 
-            if (result.data.success) {
               setSuccess(`Successfully deposited ${formatCurrency(depositAmount)}!`);
               setAmount('');
-
               setTimeout(() => {
                 window.location.href = 'dashboard.html';
               }, 2000);
             } else {
-              throw new Error('Deposit failed');
+              setLoading(false);
             }
+          } else {
+            // EFT - instant for demo
+            const { data, error: depositError } = await supabase.rpc('process_deposit', {
+              p_user_id: user.id,
+              p_amount: depositAmount,
+              p_description: `EFT Deposit - ${formatCurrency(depositAmount)}`,
+              p_payment_method: 'eft',
+              p_reference: `EFT-${Date.now()}`
+            });
+
+            if (depositError) throw depositError;
+
+            setSuccess(`Successfully deposited ${formatCurrency(depositAmount)}!`);
+            setAmount('');
+            setTimeout(() => {
+              window.location.href = 'dashboard.html';
+            }, 2000);
           }
 
         } catch (err) {
           console.error('[v0] Payment error:', err);
           setError(err.message || 'Failed to process payment. Please try again.');
+        } finally {
           setLoading(false);
         }
       };

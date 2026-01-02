@@ -193,59 +193,47 @@
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <!-- Firebase -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-analytics.js";
-    import { getAuth } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
-    import { getDatabase } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+  <!-- Supabase CDN -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAWUXQs1W0IBT2J27eEllfT8jPtZD6Fx20",
-      authDomain: "re-el-eed0d.firebaseapp.com",
-      databaseURL: "https://re-el-eed0d-default-rtdb.firebaseio.com",
-      projectId: "re-el-eed0d",
-      storageBucket: "re-el-eed0d.appspot.com",
-      messagingSenderId: "676690470943",
-      appId: "1:676690470943:web:482a707b370383369ecd2a",
-      measurementId: "G-WS35RTNEBP"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const auth = getAuth(app);
-    const database = getDatabase(app);
-
-    // Make available globally
-    window.firebaseApp = app;
-    window.firebaseAuth = auth;
-    window.firebaseDatabase = database;
-
-    console.log("[v0] Firebase initialized successfully");
-  </script>
-
-  <!-- React App -->
   <script type="text/babel">
     const { useState, useEffect } = React;
+
+    const SUPABASE_URL = 'https://bwcjqkfribgfmxklqqow.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3Y2pxa2ZyaWJnZm14a2xxcW93Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkzNzg4MDYsImV4cCI6MjA2NDk1NDgwNn0.W0xdZMQKTlU5y5hGGwlYJD_MqKVMvCCVr3TZwHRvBng';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    window.supabaseClient = supabase;
 
     function App() {
       const [deferredPrompt, setDeferredPrompt] = useState(null);
       const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+      const [loading, setLoading] = useState(true);
 
       useEffect(() => {
+        // Check if user is already logged in
+        const checkSession = async () => {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+            window.location.href = 'dashboard.html';
+          } else {
+            setLoading(false);
+          }
+        };
+        checkSession();
+
         // PWA install prompt
         window.addEventListener('beforeinstallprompt', (e) => {
           e.preventDefault();
           setDeferredPrompt(e);
           setShowInstallPrompt(true);
-          console.log("[v0] Install prompt ready");
         });
 
         // Service worker registration
         if ('serviceWorker' in navigator) {
           navigator.serviceWorker.register('/service-worker.js')
-            .then(() => console.log("[v0] Service Worker registered"))
-            .catch(err => console.log("[v0] Service Worker registration failed:", err));
+            .then(() => console.log('[v0] Service Worker registered'))
+            .catch(err => console.log('[v0] Service Worker registration failed:', err));
         }
       }, []);
 
@@ -253,21 +241,29 @@
         if (deferredPrompt) {
           deferredPrompt.prompt();
           const { outcome } = await deferredPrompt.userChoice;
-          console.log("[v0] Install outcome:", outcome);
+          console.log('[v0] Install outcome:', outcome);
           setDeferredPrompt(null);
           setShowInstallPrompt(false);
         }
       };
 
       const handleSignup = () => {
-        console.log("[v0] Navigating to signup");
         window.location.href = 'signup.html';
       };
 
       const handleLogin = () => {
-        console.log("[v0] Navigating to login");
         window.location.href = 'login.html';
       };
+
+      if (loading) {
+        return (
+          <div className="container">
+            <div className="logo">💰</div>
+            <h1>ReZA</h1>
+            <p className="tagline">Loading...</p>
+          </div>
+        );
+      }
 
       return (
         <div className="container">

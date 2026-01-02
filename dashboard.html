@@ -284,6 +284,14 @@
       color: #6b7280;
     }
 
+    .loading-spinner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-size: 1.5rem;
+    }
+
     @media (max-width: 768px) {
       .balance-amount {
         font-size: 2.5rem;
@@ -309,88 +317,130 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
-    import { getDatabase, ref, get, onValue } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyAWUXQs1W0IBT2J27eEllfT8jPtZD6Fx20",
-      authDomain: "re-el-eed0d.firebaseapp.com",
-      databaseURL: "https://re-el-eed0d-default-rtdb.firebaseio.com",
-      projectId: "re-el-eed0d",
-      storageBucket: "re-el-eed0d.appspot.com",
-      messagingSenderId: "676690470943",
-      appId: "1:676690470943:web:482a707b370383369ecd2a",
-      measurementId: "G-WS35RTNEBP"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const database = getDatabase(app);
-
-    window.firebaseAuth = auth;
-    window.firebaseDatabase = database;
-    window.onAuthStateChanged = onAuthStateChanged;
-    window.signOut = signOut;
-    window.dbRef = ref;
-    window.dbGet = get;
-    window.dbOnValue = onValue;
-  </script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
   <script type="text/babel">
     const { useState, useEffect } = React;
 
+    const SUPABASE_URL = 'https://bwcjqkfribgfmxklqqow.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3Y2pxa2ZyaWJnZm14a2xxcW93Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkzNzg4MDYsImV4cCI6MjA2NDk1NDgwNn0.W0xdZMQKTlU5y5hGGwlYJD_MqKVMvCCVr3TZwHRvBng';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     function Dashboard() {
       const [user, setUser] = useState(null);
-      const [userData, setUserData] = useState(null);
+      const [wallet, setWallet] = useState(null);
       const [loading, setLoading] = useState(true);
       const [transactions, setTransactions] = useState([]);
 
       useEffect(() => {
-        const unsubscribe = window.onAuthStateChanged(window.firebaseAuth, async (currentUser) => {
-          if (currentUser) {
-            setUser(currentUser);
-            
-            // Listen to user data changes in realtime
-            const userRef = window.dbRef(window.firebaseDatabase, 'users/' + currentUser.uid);
-            window.dbOnValue(userRef, (snapshot) => {
-              const data = snapshot.val();
-              if (data) {
-                setUserData(data);
-                setTransactions(data.transactions || []);
-              }
-              setLoading(false);
-            });
-          } else {
+        const initDashboard = async () => {
+          // Get current session
+          const { data: { session } } = await supabase.auth.getSession();
+          
+          if (!session) {
             window.location.href = 'login.html';
+            return;
           }
-        });
 
-        return () => unsubscribe();
+          setUser(session.user);
+
+          // Fetch wallet data
+          const { data: walletData, error: walletError } = await supabase
+            .from('wallets')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+          if (walletError && walletError.code === 'PGRST116') {
+            // Create wallet if it doesn't exist
+            const { data: newWallet, error: createError } = await supabase
+              .from('wallets')
+              .insert({
+                id: session.user.id,
+                full_name: session.user.user_metadata?.full_name || 'User',
+                email: session.user.email,
+                phone: session.user.user_metadata?.phone || '',
+                balance: 0.00,
+                currency: 'ZAR'
+              })
+              .select()
+              .single();
+
+            if (!createError) {
+              setWallet(newWallet);
+            }
+          } else if (walletData) {
+            setWallet(walletData);
+          }
+
+          // Fetch transactions
+          const { data: transactionsData } = await supabase
+            .from('transactions')
+            .select('*')
+            .eq('user_id', session.user.id)
+            .order('created_at', { ascending: false })
+            .limit(10);
+
+          if (transactionsData) {
+            setTransactions(transactionsData);
+          }
+
+          setLoading(false);
+
+          // Subscribe to realtime updates for wallet
+          const walletSubscription = supabase
+            .channel('wallet-changes')
+            .on('postgres_changes', {
+              event: '*',
+              schema: 'public',
+              table: 'wallets',
+              filter: `id=eq.${session.user.id}`
+            }, (payload) => {
+              if (payload.new) {
+                setWallet(payload.new);
+              }
+            })
+            .subscribe();
+
+          // Subscribe to realtime updates for transactions
+          const transactionsSubscription = supabase
+            .channel('transactions-changes')
+            .on('postgres_changes', {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'transactions',
+              filter: `user_id=eq.${session.user.id}`
+            }, (payload) => {
+              setTransactions(prev => [payload.new, ...prev].slice(0, 10));
+            })
+            .subscribe();
+
+          return () => {
+            supabase.removeChannel(walletSubscription);
+            supabase.removeChannel(transactionsSubscription);
+          };
+        };
+
+        initDashboard();
       }, []);
 
       const handleLogout = async () => {
-        try {
-          await window.signOut(window.firebaseAuth);
-          window.location.href = 'index.html';
-        } catch (error) {
-          console.error('[v0] Logout error:', error);
-        }
+        await supabase.auth.signOut();
+        window.location.href = 'index.html';
       };
 
       const formatCurrency = (amount) => {
         return new Intl.NumberFormat('en-ZA', {
           style: 'currency',
           currency: 'ZAR'
-        }).format(amount);
+        }).format(amount || 0);
       };
 
       if (loading) {
         return (
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-            <div style={{ fontSize: '2rem' }}>Loading...</div>
+          <div className="loading-spinner">
+            Loading...
           </div>
         );
       }
@@ -401,7 +451,7 @@
             <div className="header-content">
               <div className="logo-text">ReZA</div>
               <div className="user-info">
-                <span>Hello, {user?.displayName}</span>
+                <span>Hello, {wallet?.full_name || user?.email}</span>
                 <button className="logout-btn" onClick={handleLogout}>
                   Logout
                 </button>
@@ -413,7 +463,7 @@
             <div className="balance-card">
               <div className="balance-label">Your Balance</div>
               <div className="balance-amount">
-                {formatCurrency(userData?.balance || 0)}
+                {formatCurrency(wallet?.balance)}
               </div>
               <div className="balance-actions">
                 <button className="action-btn btn-deposit" onClick={() => window.location.href = 'deposit.html'}>
@@ -461,15 +511,15 @@
                   <p>Your transaction history will appear here</p>
                 </div>
               ) : (
-                transactions.slice().reverse().map((transaction, index) => (
-                  <div key={index} className="transaction-item">
+                transactions.map((transaction) => (
+                  <div key={transaction.id} className="transaction-item">
                     <div className="transaction-info">
                       <div className={`transaction-icon ${transaction.type}`}>
                         {transaction.type === 'deposit' ? '↓' : '↑'}
                       </div>
                       <div className="transaction-details">
                         <h4>{transaction.description}</h4>
-                        <p>{new Date(transaction.date).toLocaleDateString('en-ZA', { 
+                        <p>{new Date(transaction.created_at).toLocaleDateString('en-ZA', { 
                           day: 'numeric', 
                           month: 'short', 
                           year: 'numeric',

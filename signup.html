@@ -196,37 +196,15 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
-    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyAWUXQs1W0IBT2J27eEllfT8jPtZD6Fx20",
-      authDomain: "re-el-eed0d.firebaseapp.com",
-      databaseURL: "https://re-el-eed0d-default-rtdb.firebaseio.com",
-      projectId: "re-el-eed0d",
-      storageBucket: "re-el-eed0d.appspot.com",
-      messagingSenderId: "676690470943",
-      appId: "1:676690470943:web:482a707b370383369ecd2a",
-      measurementId: "G-WS35RTNEBP"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const database = getDatabase(app);
-
-    window.firebaseAuth = auth;
-    window.firebaseDatabase = database;
-    window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
-    window.updateProfile = updateProfile;
-    window.dbRef = ref;
-    window.dbSet = set;
-  </script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
   <script type="text/babel">
     const { useState } = React;
+
+    const SUPABASE_URL = 'https://bwcjqkfribgfmxklqqow.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3Y2pxa2ZyaWJnZm14a2xxcW93Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkzNzg4MDYsImV4cCI6MjA2NDk1NDgwNn0.W0xdZMQKTlU5y5hGGwlYJD_MqKVMvCCVr3TZwHRvBng';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     function SignupForm() {
       const [fullName, setFullName] = useState('');
@@ -256,47 +234,60 @@
         setLoading(true);
 
         try {
-          // Create user account
-          const userCredential = await window.createUserWithEmailAndPassword(
-            window.firebaseAuth,
+          const { data: authData, error: authError } = await supabase.auth.signUp({
             email,
-            password
-          );
-
-          // Update profile
-          await window.updateProfile(userCredential.user, {
-            displayName: fullName
+            password,
+            options: {
+              data: {
+                full_name: fullName,
+                phone: phone
+              },
+              emailRedirectTo: window.location.origin + '/dashboard.html'
+            }
           });
 
-          // Create wallet with R0.00 balance
-          const userRef = window.dbRef(window.firebaseDatabase, 'users/' + userCredential.user.uid);
-          await window.dbSet(userRef, {
-            fullName: fullName,
-            email: email,
-            phone: phone,
-            balance: 0.00,
-            currency: 'ZAR',
-            createdAt: new Date().toISOString(),
-            transactions: []
-          });
+          if (authError) throw authError;
 
-          setSuccess('Account created successfully! Redirecting...');
-          
-          setTimeout(() => {
-            window.location.href = 'dashboard.html';
-          }, 2000);
+          // Check if email confirmation is required
+          if (authData.user && !authData.session) {
+            // Email confirmation required
+            setSuccess('Account created! Please check your email to confirm your account before logging in.');
+            setTimeout(() => {
+              window.location.href = 'login.html';
+            }, 3000);
+          } else if (authData.session) {
+            // Auto-confirmed (for development or if email confirmation is disabled)
+            // Create wallet record
+            const { error: walletError } = await supabase
+              .from('wallets')
+              .insert({
+                id: authData.user.id,
+                full_name: fullName,
+                email: email,
+                phone: phone,
+                balance: 0.00,
+                currency: 'ZAR'
+              });
+
+            if (walletError) {
+              console.error('[v0] Wallet creation error:', walletError);
+            }
+
+            setSuccess('Account created successfully! Redirecting...');
+            setTimeout(() => {
+              window.location.href = 'dashboard.html';
+            }, 2000);
+          }
 
         } catch (err) {
           console.error('[v0] Signup error:', err);
           
-          if (err.code === 'auth/email-already-in-use') {
+          if (err.message?.includes('already registered')) {
             setError('This email is already registered');
-          } else if (err.code === 'auth/invalid-email') {
+          } else if (err.message?.includes('invalid')) {
             setError('Invalid email address');
-          } else if (err.code === 'auth/weak-password') {
-            setError('Password is too weak');
           } else {
-            setError('Failed to create account. Please try again.');
+            setError(err.message || 'Failed to create account. Please try again.');
           }
         } finally {
           setLoading(false);

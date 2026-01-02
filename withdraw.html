@@ -218,66 +218,61 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
-    import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
-    import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-functions.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyAWUXQs1W0IBT2J27eEllfT8jPtZD6Fx20",
-      authDomain: "re-el-eed0d.firebaseapp.com",
-      databaseURL: "https://re-el-eed0d-default-rtdb.firebaseio.com",
-      projectId: "re-el-eed0d",
-      storageBucket: "re-el-eed0d.appspot.com",
-      messagingSenderId: "676690470943",
-      appId: "1:676690470943:web:482a707b370383369ecd2a",
-      measurementId: "G-WS35RTNEBP"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const database = getDatabase(app);
-    const functions = getFunctions(app);
-
-    window.firebaseAuth = auth;
-    window.firebaseDatabase = database;
-    window.firebaseFunctions = functions;
-    window.onAuthStateChanged = onAuthStateChanged;
-    window.httpsCallable = httpsCallable;
-    window.dbRef = ref;
-    window.dbGet = get;
-    window.dbSet = set;
-  </script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
   <script type="text/babel">
     const { useState, useEffect } = React;
 
+    const SUPABASE_URL = 'https://bwcjqkfribgfmxklqqow.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3Y2pxa2ZyaWJnZm14a2xxcW93Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkzNzg4MDYsImV4cCI6MjA2NDk1NDgwNn0.W0xdZMQKTlU5y5hGGwlYJD_MqKVMvCCVr3TZwHRvBng';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     function WithdrawPage() {
       const [user, setUser] = useState(null);
-      const [userData, setUserData] = useState(null);
+      const [wallet, setWallet] = useState(null);
+      const [bankAccounts, setBankAccounts] = useState([]);
       const [amount, setAmount] = useState('');
       const [selectedBank, setSelectedBank] = useState('');
       const [loading, setLoading] = useState(false);
+      const [pageLoading, setPageLoading] = useState(true);
       const [error, setError] = useState('');
       const [success, setSuccess] = useState('');
 
       useEffect(() => {
-        const unsubscribe = window.onAuthStateChanged(window.firebaseAuth, async (currentUser) => {
-          if (currentUser) {
-            setUser(currentUser);
-            
-            const userRef = window.dbRef(window.firebaseDatabase, 'users/' + currentUser.uid);
-            const snapshot = await window.dbGet(userRef);
-            const data = snapshot.val();
-            setUserData(data);
-          } else {
+        const initPage = async () => {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) {
             window.location.href = 'login.html';
+            return;
           }
-        });
+          setUser(session.user);
 
-        return () => unsubscribe();
+          // Fetch wallet
+          const { data: walletData } = await supabase
+            .from('wallets')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+          if (walletData) {
+            setWallet(walletData);
+          }
+
+          // Fetch bank accounts
+          const { data: banksData } = await supabase
+            .from('bank_accounts')
+            .select('*')
+            .eq('user_id', session.user.id)
+            .order('created_at', { ascending: false });
+
+          if (banksData) {
+            setBankAccounts(banksData);
+          }
+
+          setPageLoading(false);
+        };
+        initPage();
       }, []);
 
       const handleWithdraw = async (e) => {
@@ -295,7 +290,7 @@
           return;
         }
 
-        if (withdrawAmount > userData.balance) {
+        if (withdrawAmount > wallet.balance) {
           setError('Insufficient balance');
           return;
         }
@@ -309,28 +304,31 @@
         setError('');
 
         try {
-          const banks = userData?.banks || [];
-          const selectedBankData = banks[parseInt(selectedBank)];
+          const selectedBankData = bankAccounts.find(b => b.id === selectedBank);
           
-          const processWithdrawal = window.httpsCallable(window.firebaseFunctions, 'processWithdrawal');
-          const result = await processWithdrawal({
-            amount: withdrawAmount,
-            bankAccountId: selectedBank,
-            bankName: selectedBankData.name,
-            accountNumber: selectedBankData.accountNumber
+          // Process withdrawal using the database function
+          const { data, error: withdrawError } = await supabase.rpc('process_withdrawal', {
+            p_user_id: user.id,
+            p_amount: withdrawAmount,
+            p_description: `Withdrawal to ${selectedBankData.bank_name} - ***${selectedBankData.account_number.slice(-4)}`,
+            p_bank_account_id: selectedBank
           });
 
-          if (result.data.success) {
-            setSuccess(`Successfully withdrew ${formatCurrency(withdrawAmount)}!`);
-            setAmount('');
-            setSelectedBank('');
+          if (withdrawError) throw withdrawError;
 
-            setTimeout(() => {
-              window.location.href = 'dashboard.html';
-            }, 2000);
-          } else {
-            throw new Error('Withdrawal failed');
-          }
+          setSuccess(`Successfully withdrew ${formatCurrency(withdrawAmount)}!`);
+          setAmount('');
+          setSelectedBank('');
+
+          // Update local wallet state
+          setWallet(prev => ({
+            ...prev,
+            balance: data.new_balance
+          }));
+
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 2000);
 
         } catch (err) {
           console.error('[v0] Withdrawal error:', err);
@@ -344,10 +342,16 @@
         return new Intl.NumberFormat('en-ZA', {
           style: 'currency',
           currency: 'ZAR'
-        }).format(value);
+        }).format(value || 0);
       };
 
-      const banks = userData?.banks || [];
+      if (pageLoading) {
+        return (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+            <div style={{ fontSize: '1.5rem' }}>Loading...</div>
+          </div>
+        );
+      }
 
       return (
         <>
@@ -365,7 +369,7 @@
               <div className="balance-display">
                 <div className="balance-label">Available Balance</div>
                 <div className="balance-amount">
-                  {formatCurrency(userData?.balance || 0)}
+                  {formatCurrency(wallet?.balance)}
                 </div>
               </div>
 
@@ -393,7 +397,7 @@
 
                 <div className="form-group">
                   <label>Bank Account</label>
-                  {banks.length === 0 ? (
+                  {bankAccounts.length === 0 ? (
                     <div style={{ padding: '1rem', textAlign: 'center', color: '#6b7280' }}>
                       No bank accounts linked. 
                       <span className="add-bank-link" onClick={() => window.location.href = 'banks.html'}>
@@ -408,9 +412,9 @@
                       required
                     >
                       <option value="">Select a bank account</option>
-                      {banks.map((bank, index) => (
-                        <option key={index} value={index}>
-                          {bank.name} - ***{bank.accountNumber.slice(-4)}
+                      {bankAccounts.map((bank) => (
+                        <option key={bank.id} value={bank.id}>
+                          {bank.bank_name} - ***{bank.account_number.slice(-4)}
                         </option>
                       ))}
                     </select>
@@ -420,7 +424,7 @@
                 <button
                   type="submit"
                   className="withdraw-btn"
-                  disabled={loading || !amount || banks.length === 0}
+                  disabled={loading || !amount || bankAccounts.length === 0}
                 >
                   {loading ? 'Processing...' : `Withdraw ${amount ? formatCurrency(parseFloat(amount)) : 'Amount'}`}
                 </button>
