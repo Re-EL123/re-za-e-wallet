@@ -14,28 +14,6 @@
       box-sizing: border-box;
     }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      background: linear-gradient(135deg, #065f46 0%, #047857 50%, #064e3b 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      padding: 1rem;
-    }
-
-    .container {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 24px;
-      padding: 2.5rem;
-      max-width: 420px;
-      width: 100%;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      animation: slideUp 0.5s ease-out;
-    }
-
     @keyframes slideUp {
       from {
         opacity: 0;
@@ -47,6 +25,114 @@
       }
     }
 
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -1000px 0;
+      }
+      100% {
+        background-position: 1000px 0;
+      }
+    }
+
+    @keyframes rotateIn {
+      from {
+        opacity: 0;
+        transform: rotate(-10deg) scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: rotate(0deg) scale(1);
+      }
+    }
+
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes slideInFromLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #065f46 0%, #047857 50%, #064e3b 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      padding: 1rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(251, 191, 36, 0.05) 1px, transparent 1px);
+      background-size: 50px 50px;
+      animation: float 20s ease-in-out infinite;
+      opacity: 0.5;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      padding: 2.5rem;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: slideUp 0.5s ease-out;
+      position: relative;
+      z-index: 1;
+    }
+
     .logo {
       width: 80px;
       height: 80px;
@@ -56,7 +142,28 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2rem;
+      animation: pulse 2s ease-in-out infinite, rotateIn 0.6s ease-out;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .logo::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      animation: shimmer 3s infinite;
+    }
+
+    .logo svg {
+      width: 40px;
+      height: 40px;
+      color: #065f46;
+      position: relative;
+      z-index: 1;
     }
 
     h1 {
@@ -67,6 +174,8 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      animation: slideInFromLeft 0.6s ease-out;
+      font-weight: 800;
     }
 
     .subtitle {
@@ -74,22 +183,61 @@
       color: #d1fae5;
       margin-bottom: 2rem;
       font-size: 0.95rem;
+      animation: fadeIn 0.8s ease-out;
+      font-weight: 500;
     }
 
     .form-group {
       margin-bottom: 1.5rem;
+      animation: slideInFromLeft 0.5s ease-out;
+      animation-fill-mode: both;
     }
+
+    .form-group:nth-child(1) { animation-delay: 0.1s; }
+    .form-group:nth-child(2) { animation-delay: 0.15s; }
+    .form-group:nth-child(3) { animation-delay: 0.2s; }
+    .form-group:nth-child(4) { animation-delay: 0.25s; }
+    .form-group:nth-child(5) { animation-delay: 0.3s; }
 
     label {
       display: block;
       margin-bottom: 0.5rem;
       font-weight: 500;
       color: #d1fae5;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    label svg {
+      width: 16px;
+      height: 16px;
+      color: #fbbf24;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 1rem;
+      color: #047857;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      z-index: 1;
+    }
+
+    .input-icon svg {
+      width: 20px;
+      height: 20px;
     }
 
     input {
       width: 100%;
-      padding: 0.875rem 1rem;
+      padding: 0.875rem 1rem 0.875rem 3rem;
       border: 2px solid rgba(251, 191, 36, 0.3);
       border-radius: 12px;
       font-size: 1rem;
@@ -102,6 +250,13 @@
       outline: none;
       border-color: #fbbf24;
       background: white;
+      transform: scale(1.02);
+      box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+    }
+
+    input:focus ~ .input-icon {
+      color: #fbbf24;
+      transform: scale(1.1);
     }
 
     button {
@@ -115,6 +270,27 @@
       transition: all 0.3s ease;
       text-transform: uppercase;
       letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    button:hover::before {
+      left: 100%;
     }
 
     .btn-primary {
@@ -122,11 +298,18 @@
       color: #065f46;
       box-shadow: 0 10px 30px rgba(251, 191, 36, 0.3);
       margin-bottom: 1rem;
+      animation: scaleIn 0.5s ease-out;
+      animation-delay: 0.4s;
+      animation-fill-mode: both;
     }
 
     .btn-primary:hover:not(:disabled) {
       transform: translateY(-2px);
       box-shadow: 0 15px 40px rgba(251, 191, 36, 0.4);
+    }
+
+    .btn-primary:active:not(:disabled) {
+      transform: translateY(0);
     }
 
     .btn-primary:disabled {
@@ -139,10 +322,19 @@
       color: white;
       border: 2px solid rgba(251, 191, 36, 0.5);
       font-size: 0.95rem;
+      animation: scaleIn 0.5s ease-out;
+      animation-delay: 0.5s;
+      animation-fill-mode: both;
     }
 
     .btn-secondary:hover {
       background: rgba(251, 191, 36, 0.1);
+      border-color: #fbbf24;
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary:active {
+      transform: translateY(0);
     }
 
     .error {
@@ -153,10 +345,19 @@
       border-radius: 12px;
       margin-bottom: 1.5rem;
       display: none;
+      animation: scaleIn 0.3s ease-out;
+      align-items: center;
+      gap: 0.75rem;
     }
 
     .error.show {
-      display: block;
+      display: flex;
+    }
+
+    .error svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
     }
 
     .success {
@@ -167,16 +368,40 @@
       border-radius: 12px;
       margin-bottom: 1.5rem;
       display: none;
+      animation: scaleIn 0.3s ease-out;
+      align-items: center;
+      gap: 0.75rem;
     }
 
     .success.show {
-      display: block;
+      display: flex;
+    }
+
+    .success svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
     }
 
     .divider {
       text-align: center;
       margin: 1.5rem 0;
       color: #d1fae5;
+      font-weight: 500;
+      animation: fadeIn 1s ease-out;
+    }
+
+    .loading-spinner {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     @media (max-width: 480px) {
@@ -201,7 +426,87 @@
   <script type="text/babel">
     const { useState } = React;
 
-     const SUPABASE_URL = 'https://zbwteaziiasmfagaalve.supabase.co';
+    // Lucide Icons
+    const Wallet = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/>
+        <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/>
+        <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/>
+      </svg>
+    );
+
+    const User = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+    );
+
+    const Mail = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect width="20" height="16" x="2" y="4" rx="2"/>
+        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+      </svg>
+    );
+
+    const Phone = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+      </svg>
+    );
+
+    const Lock = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+    );
+
+    const Shield = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+    );
+
+    const UserPlus = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <line x1="19" x2="19" y1="8" y2="14"/>
+        <line x1="22" x2="16" y1="11" y2="11"/>
+      </svg>
+    );
+
+    const LogIn = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+        <polyline points="10 17 15 12 10 7"/>
+        <line x1="15" x2="3" y1="12" y2="12"/>
+      </svg>
+    );
+
+    const AlertCircle = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" x2="12" y1="8" y2="12"/>
+        <line x1="12" x2="12.01" y1="16" y2="16"/>
+      </svg>
+    );
+
+    const CheckCircle = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+    );
+
+    const Loader2 = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="loading-spinner">
+        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+      </svg>
+    );
+
+    const SUPABASE_URL = 'https://zbwteaziiasmfagaalve.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpid3RlYXppaWFzbWZhZ2FhbHZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczNDM4ODEsImV4cCI6MjA4MjkxOTg4MX0.ZOP4W0sIbv9BEnsQrthR6EfvDXJxtaYfSgNoGok8OsQ';
     
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -296,76 +601,139 @@
 
       return (
         <div className="container">
-          <div className="logo">💰</div>
+          <div className="logo">
+            <Wallet />
+          </div>
           <h1>Create Account</h1>
           <p className="subtitle">Start your ReZA wallet with R0.00</p>
 
-          {error && <div className="error show">{error}</div>}
-          {success && <div className="success show">{success}</div>}
+          {error && (
+            <div className="error show">
+              <AlertCircle />
+              <span>{error}</span>
+            </div>
+          )}
+          
+          {success && (
+            <div className="success show">
+              <CheckCircle />
+              <span>{success}</span>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label>Full Name</label>
-              <input
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                required
-                placeholder="John Doe"
-                disabled={loading}
-              />
+              <label>
+                <Shield />
+                Full Name
+              </label>
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                  placeholder="John Doe"
+                  disabled={loading}
+                />
+                <div className="input-icon">
+                  <User />
+                </div>
+              </div>
             </div>
 
             <div className="form-group">
-              <label>Email Address</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="john@example.com"
-                disabled={loading}
-              />
+              <label>
+                <Shield />
+                Email Address
+              </label>
+              <div className="input-wrapper">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="john@example.com"
+                  disabled={loading}
+                />
+                <div className="input-icon">
+                  <Mail />
+                </div>
+              </div>
             </div>
 
             <div className="form-group">
-              <label>Phone Number</label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                required
-                placeholder="+27 XX XXX XXXX"
-                disabled={loading}
-              />
+              <label>
+                <Shield />
+                Phone Number
+              </label>
+              <div className="input-wrapper">
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  required
+                  placeholder="+27 XX XXX XXXX"
+                  disabled={loading}
+                />
+                <div className="input-icon">
+                  <Phone />
+                </div>
+              </div>
             </div>
 
             <div className="form-group">
-              <label>Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="Minimum 6 characters"
-                disabled={loading}
-              />
+              <label>
+                <Shield />
+                Password
+              </label>
+              <div className="input-wrapper">
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="Minimum 6 characters"
+                  disabled={loading}
+                />
+                <div className="input-icon">
+                  <Lock />
+                </div>
+              </div>
             </div>
 
             <div className="form-group">
-              <label>Confirm Password</label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                placeholder="Re-enter your password"
-                disabled={loading}
-              />
+              <label>
+                <Shield />
+                Confirm Password
+              </label>
+              <div className="input-wrapper">
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  placeholder="Re-enter your password"
+                  disabled={loading}
+                />
+                <div className="input-icon">
+                  <Lock />
+                </div>
+              </div>
             </div>
 
             <button type="submit" className="btn-primary" disabled={loading}>
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? (
+                <>
+                  <Loader2 />
+                  Creating Account...
+                </>
+              ) : (
+                <>
+                  <UserPlus />
+                  Create Account
+                </>
+              )}
             </button>
 
             <div className="divider">Already have an account?</div>
@@ -376,6 +744,7 @@
               onClick={() => window.location.href = 'login.html'}
               disabled={loading}
             >
+              <LogIn />
               Login Instead
             </button>
           </form>
