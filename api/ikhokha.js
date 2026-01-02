@@ -12,7 +12,7 @@ export default async function handler(req, res) {
   const paymentData = {
     entityID: process.env.IKHOKHA_APP_ID,  // Your APPID
     externalEntityID: user_id || 'reza-wallet',
-    amount: Math.round(amount * 100),  // Convert to cents
+    amount: Math.round(amount * 1),  // Convert to cents
     currency: 'ZAR',
     requesterUrl: 'https://re-za-e-wallet-mzansi.vercel.app',
     mode: 'live',
