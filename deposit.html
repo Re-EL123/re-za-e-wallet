@@ -662,15 +662,11 @@
           // Create Basic Auth header
           const authString = btoa(`${IKHOKHA_APP_ID}:${IKHOKHA_SECRET}`);
           
-          const response = await fetch(`${IKHOKHA_API_URL}/payment_request`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Basic ${authString}`,
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify(paymentData)
-          });
+        const response = await fetch('/api/ikhokha', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(paymentData)
+});
 
           if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
