@@ -566,7 +566,7 @@
     // iKhokha API credentials
     const IKHOKHA_APP_ID = 'IKUYN0WT5869GD75KEWWTPNU13BAEYP6';
     const IKHOKHA_SECRET = 'Ff3y5LZDWyWafDhMK4qBmwzTQpQwKWaL';
-    const IKHOKHA_API_URL = 'https://api.ikhokha.com/pay/v1';
+    const IKHOKHA_API_URL = 'https://api.ikhokha.com/public-api/v1/api/payment';
 
     function DepositPage() {
       const [user, setUser] = useState(null);
@@ -674,13 +674,16 @@
           }
 
           const result = await response.json();
-          
-          if (result.payment_url) {
-            // Redirect to iKhokha payment page
-            window.location.href = result.payment_url;
-          } else {
-            throw new Error('No payment URL received from gateway');
-          }
+console.log('[iKhokha FULL response]:', result);  // Keep for debugging
+
+// FIX: iKhokha uses "paylinkUrl" (docs), not "payment_url"
+if (result.paylinkUrl || result.paylink_url) {  // Handle both cases
+  const paymentUrl = result.paylinkUrl || result.paylink_url;
+  window.location.href = paymentUrl;
+} else {
+  throw new Error(`No payment URL. Response: ${JSON.stringify(result)}`);
+}
+
           
         } catch (err) {
           console.error('[iKhokha] Payment initiation error:', err);
