@@ -16,8 +16,18 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Fetch from cache
+// Fetch logic
 self.addEventListener('fetch', (event) => {
+  // 1. SKIP Supabase and other API calls
+  // Service Workers should generally not intercept POST requests or Auth APIs
+  if (
+    event.request.url.includes('supabase.co') || 
+    event.request.method !== 'GET'
+  ) {
+    return; // Handled by the browser directly
+  }
+
+  // 2. Standard Cache-First Strategy for static assets
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
