@@ -1,128 +1,298 @@
-# ReZA E-Wallet - Deployment Guide
+# ReZA E-Wallet - Production Deployment Guide
+
+## Overview
+
+ReZA e-wallet uses **Supabase** for authentication, database, and real-time features, combined with **iKhokha** for payment processing. This guide walks you through deploying everything to production.
+
+---
 
 ## Prerequisites
 
-Before deploying, ensure you have:
+- Supabase account (free tier works)
+- iKhokha merchant account with API credentials
+- Vercel account for hosting
+- GitHub repository connected to Vercel
 
-1. A Firebase project (already configured at `re-el-eed0d`)
-2. iKhokha merchant account with API credentials
-3. Node.js 18 or higher installed
-4. Firebase CLI installed: `npm install -g firebase-tools`
-5. A Vercel account
+---
 
-## Step 1: Deploy Firebase Cloud Functions
+## Step 1: Database Setup (Already Complete)
 
-Cloud Functions handle secure transaction processing and must be deployed before the app can process real payments.
+The following migrations have been applied to your Supabase project:
 
-```bash
-# Navigate to the functions directory
-cd functions
+### Tables Created:
+- `wallets` - User wallet balances and info
+- `bank_accounts` - Linked bank accounts
+- `transactions` - Transaction history
+- `payment_links` - iKhokha payment tracking
 
-# Install dependencies
-npm install
+### Security (RLS Policies):
+- Users can only access their own data
+- Balance modifications only via secure PostgreSQL functions
 
-# Login to Firebase
-firebase login
+### Secure Functions:
+- `process_deposit()` - Atomically adds funds
+- `process_withdrawal()` - Atomically withdraws funds
+- `get_wallet_balance()` - Retrieves current balance
 
-# Deploy the functions
-firebase deploy --only functions
-```
+---
 
-This will deploy:
-- `createPaymentLink` - Creates iKhokha payment links
-- `processDeposit` - Processes deposit transactions
-- `processWithdrawal` - Processes withdrawal transactions
-- `paymentCallback` - Handles iKhokha webhook callbacks
+## Step 2: Deploy Frontend to Vercel
 
-## Step 2: Configure Database Rules
+### Option A: Automatic Deployment (Recommended)
 
-Deploy the security rules to protect user data:
+1. Push your code to GitHub
+2. Connect repository to Vercel at [vercel.com/new](https://vercel.com/new)
+3. Vercel auto-deploys on every push
 
-```bash
-firebase deploy --only database
-```
-
-The rules ensure:
-- Users can only read/write their own data
-- Balance and transactions can only be modified by Cloud Functions
-- Prevents unauthorized access
-
-## Step 3: Deploy Frontend to Vercel
-
-The frontend is automatically deployed to Vercel when you push to this repository.
-
-To manually deploy:
+### Option B: Manual Deployment
 
 ```bash
 # Install Vercel CLI
 npm install -g vercel
 
+# Login to Vercel
+vercel login
+
 # Deploy
-vercel
+vercel --prod
 ```
+
+---
+
+## Step 3: Configure Environment Variables
+
+Add these to your Vercel project settings (Settings > Environment Variables):
+
+```env
+# Supabase (Already configured via v0 integration)
+NEXT_PUBLIC_SUPABASE_URL=https://zbwteaziiasmfagaalve.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+
+# iKhokha Payment Gateway
+IKHOKHA_APP_KEY=IKUYN0WT5869GD75KEWWTPNU13BAEYP6
+IKHOKHA_SECRET=Ff3y5LZDWyWafDhMK4qBmwzTQpQwKWaL
+```
+
+---
 
 ## Step 4: Configure iKhokha Webhooks
 
-1. Log in to your iKhokha merchant dashboard
-2. Navigate to API Settings > Webhooks
-3. Add webhook URL: `https://YOUR-REGION-YOUR-PROJECT.cloudfunctions.net/paymentCallback`
-4. Enable payment status notifications
+For real payment notifications:
 
-## Step 5: Test the Application
+1. Log in to [iKhokha Merchant Portal](https://dashboard.ikhokha.com)
+2. Navigate to **Developer** > **Webhooks**
+3. Add webhook URL: `https://your-app.vercel.app/api/ikhokha-webhook`
+4. Select events: `payment.success`, `payment.failed`
+5. Save and copy the webhook secret
 
-1. Create a test account
-2. Try depositing with a test card (use iKhokha test credentials)
-3. Add a bank account
-4. Test withdrawal functionality
-5. Verify transactions appear in history
+---
 
-## Environment Variables (Production)
+## Step 5: Create Webhook Handler (Optional - For Real Payments)
 
-For production, move sensitive credentials to environment variables:
+Create this API route to handle iKhokha payment callbacks:
 
-### Firebase Functions
+**File: `api/ikhokha-webhook.js`** (if using Vercel serverless)
 
-Create `functions/.env`:
+```javascript
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+)
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  const { reference, status, amount } = req.body
+
+  if (status === 'SUCCESSFUL') {
+    // Find the payment link and process deposit
+    const { data: paymentLink } = await supabase
+      .from('payment_links')
+      .select('*')
+      .eq('ikhokha_reference', reference)
+      .single()
+
+    if (paymentLink) {
+      // Process the deposit using secure function
+      await supabase.rpc('process_deposit', {
+        p_user_id: paymentLink.user_id,
+        p_amount: amount / 100, // Convert cents to rands
+        p_description: 'iKhokha Card Deposit',
+        p_payment_method: 'card',
+        p_reference: reference
+      })
+
+      // Update payment link status
+      await supabase
+        .from('payment_links')
+        .update({ status: 'completed' })
+        .eq('id', paymentLink.id)
+    }
+  }
+
+  res.status(200).json({ received: true })
+}
 ```
-IKHOKHA_APP_KEY=your_app_key
-IKHOKHA_SECRET=your_secret
-```
 
-### Frontend
+---
 
-Add to Vercel environment variables:
-```
-NEXT_PUBLIC_FIREBASE_API_KEY=your_key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_domain
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-```
+## Step 6: Test the Application
 
-## Monitoring
+### Test Account Creation:
+1. Go to your deployed app URL
+2. Click "Create Account"
+3. Enter name, email, phone, and password
+4. Verify email if Supabase email confirmation is enabled
 
-- **Firebase Console**: Monitor database usage and function logs
-- **Vercel Dashboard**: Monitor frontend deployment and analytics
-- **iKhokha Dashboard**: Track payment transactions
+### Test Deposits:
+1. Login to your account
+2. Go to "Deposit"
+3. Enter an amount (e.g., R100)
+4. Click "Pay with Card"
+5. Complete payment on iKhokha checkout page
+6. Verify balance updated on dashboard
+
+### Test Withdrawals:
+1. Add a bank account first
+2. Go to "Withdraw"
+3. Select bank account and enter amount
+4. Submit withdrawal request
+
+---
+
+## Database Schema Reference
+
+### wallets
+| Column | Type | Description |
+|--------|------|-------------|
+| id | UUID | User ID (from auth.users) |
+| full_name | TEXT | User's full name |
+| email | TEXT | User's email |
+| phone | TEXT | Phone number |
+| balance | DECIMAL | Current balance in ZAR |
+| currency | TEXT | Always 'ZAR' |
+| created_at | TIMESTAMP | Account creation date |
+
+### bank_accounts
+| Column | Type | Description |
+|--------|------|-------------|
+| id | UUID | Account ID |
+| user_id | UUID | Owner's user ID |
+| bank_name | TEXT | Bank name |
+| account_holder | TEXT | Account holder name |
+| account_number | TEXT | Bank account number |
+| account_type | TEXT | cheque/savings |
+| branch_code | TEXT | Bank branch code |
+| is_verified | BOOLEAN | Verification status |
+
+### transactions
+| Column | Type | Description |
+|--------|------|-------------|
+| id | UUID | Transaction ID |
+| user_id | UUID | User who made transaction |
+| type | TEXT | 'deposit' or 'withdrawal' |
+| amount | DECIMAL | Amount in ZAR |
+| description | TEXT | Transaction description |
+| status | TEXT | pending/completed/failed |
+| payment_method | TEXT | card/eft/bank_transfer |
+| reference | TEXT | External reference |
+| created_at | TIMESTAMP | Transaction date |
+
+---
+
+## Security Best Practices
+
+1. **Never expose service role key** - Only use anon key in frontend
+2. **RLS is enabled** - Users can only see their own data
+3. **Secure functions** - Balance changes only via `process_deposit` and `process_withdrawal`
+4. **HTTPS only** - Vercel provides free SSL
+5. **Validate webhooks** - Verify iKhokha webhook signatures
+
+---
+
+## Monitoring & Logs
+
+### Supabase Dashboard
+- **Auth**: Monitor signups and logins
+- **Database**: View tables and run queries
+- **Logs**: Check API and database logs
+
+### Vercel Dashboard
+- **Deployments**: View deployment history
+- **Analytics**: Traffic and performance
+- **Logs**: Function execution logs
+
+### iKhokha Dashboard
+- **Transactions**: Payment history
+- **Reports**: Revenue analytics
+
+---
 
 ## Troubleshooting
 
-### Functions not deploying
-- Ensure you're logged in: `firebase login`
-- Check Node.js version: `node --version` (must be 18+)
-- Review logs: `firebase functions:log`
+### "User not found" after signup
+- Check Supabase Auth logs for errors
+- Verify email confirmation settings
+- Ensure wallet record was created
 
-### Payments failing
-- Verify iKhokha credentials are correct
-- Check webhook URL is configured
-- Review Cloud Function logs for errors
+### Payments not updating balance
+- Check iKhokha webhook configuration
+- Verify webhook URL is correct
+- Check Vercel function logs
 
-### Database permission errors
-- Ensure database rules are deployed
-- Verify user is authenticated
-- Check Firebase console for rule violations
+### "Insufficient balance" errors
+- Verify wallet balance in Supabase
+- Check for pending transactions
+- Review transaction logs
+
+### RLS policy errors
+- Ensure user is authenticated
+- Verify user ID matches wallet ID
+- Check Supabase logs for policy violations
+
+---
 
 ## Support
 
-For issues:
-1. Check Firebase Console logs
-2. Review Vercel deployment logs
-3. Contact support at vercel.com/help
+- **Supabase Issues**: [supabase.com/docs](https://supabase.com/docs)
+- **iKhokha Support**: [support.ikhokha.com](https://support.ikhokha.com)
+- **Vercel Help**: [vercel.com/help](https://vercel.com/help)
+- **App Issues**: Open GitHub issue in repository
+
+---
+
+## Quick Commands
+
+```bash
+# Deploy to Vercel
+vercel --prod
+
+# View Vercel logs
+vercel logs
+
+# Open Supabase dashboard
+# https://supabase.com/dashboard/project/zbwteaziiasmfagaalve
+
+# Test locally
+npx serve .
+```
+
+---
+
+## Production Checklist
+
+- [ ] Supabase project configured
+- [ ] Database migrations applied
+- [ ] RLS policies enabled
+- [ ] Environment variables set in Vercel
+- [ ] iKhokha webhooks configured
+- [ ] Custom domain connected (optional)
+- [ ] Email templates customized in Supabase
+- [ ] Test signup/login flow
+- [ ] Test deposit flow
+- [ ] Test withdrawal flow
+- [ ] Monitor first real transactions
