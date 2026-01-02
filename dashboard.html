@@ -14,6 +14,106 @@
       box-sizing: border-box;
     }
 
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInFromTop {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInFromLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -1000px 0;
+      }
+      100% {
+        background-position: 1000px 0;
+      }
+    }
+
+    @keyframes balanceGlow {
+      0%, 100% {
+        box-shadow: 0 20px 60px rgba(6, 95, 70, 0.3);
+      }
+      50% {
+        box-shadow: 0 20px 60px rgba(6, 95, 70, 0.5), 0 0 40px rgba(251, 191, 36, 0.2);
+      }
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
       background: #f0fdf4;
@@ -26,6 +126,10 @@
       color: white;
       padding: 1.5rem;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      animation: slideInFromTop 0.5s ease-out;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
 
     .header-content {
@@ -43,12 +147,28 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      animation: float 3s ease-in-out infinite;
     }
 
     .user-info {
       display: flex;
       align-items: center;
       gap: 1rem;
+    }
+
+    .user-greeting {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
     }
 
     .logout-btn {
@@ -60,10 +180,14 @@
       cursor: pointer;
       font-weight: 600;
       transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
     .logout-btn:hover {
       background: rgba(251, 191, 36, 0.3);
+      transform: translateY(-2px);
     }
 
     .container {
@@ -78,7 +202,7 @@
       border-radius: 24px;
       padding: 2rem;
       margin-bottom: 2rem;
-      box-shadow: 0 20px 60px rgba(6, 95, 70, 0.3);
+      animation: balanceGlow 3s ease-in-out infinite, scaleIn 0.6s ease-out;
       position: relative;
       overflow: hidden;
     }
@@ -92,12 +216,33 @@
       height: 300px;
       background: radial-gradient(circle, rgba(251, 191, 36, 0.2) 0%, transparent 70%);
       border-radius: 50%;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .balance-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      animation: shimmer 3s infinite;
+    }
+
+    .balance-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      position: relative;
+      z-index: 1;
     }
 
     .balance-label {
       font-size: 0.95rem;
       color: #d1fae5;
-      margin-bottom: 0.5rem;
+      font-weight: 600;
     }
 
     .balance-amount {
@@ -108,12 +253,16 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      position: relative;
+      z-index: 1;
     }
 
     .balance-actions {
       display: flex;
       gap: 1rem;
       flex-wrap: wrap;
+      position: relative;
+      z-index: 1;
     }
 
     .action-btn {
@@ -129,6 +278,23 @@
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .action-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .action-btn:hover::before {
+      left: 100%;
     }
 
     .btn-deposit {
@@ -150,6 +316,11 @@
 
     .action-btn:hover {
       transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .action-btn:active {
+      transform: translateY(0);
     }
 
     .section-title {
@@ -157,6 +328,10 @@
       font-weight: 700;
       color: #065f46;
       margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      animation: slideInFromLeft 0.6s ease-out;
     }
 
     .transactions-card {
@@ -164,6 +339,7 @@
       border-radius: 16px;
       padding: 1.5rem;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      animation: fadeIn 0.8s ease-out;
     }
 
     .transaction-item {
@@ -172,10 +348,25 @@
       align-items: center;
       padding: 1rem;
       border-bottom: 1px solid #e5e7eb;
+      transition: all 0.3s ease;
+      animation: slideUp 0.3s ease-out;
+      animation-fill-mode: both;
     }
+
+    .transaction-item:nth-child(1) { animation-delay: 0.1s; }
+    .transaction-item:nth-child(2) { animation-delay: 0.15s; }
+    .transaction-item:nth-child(3) { animation-delay: 0.2s; }
+    .transaction-item:nth-child(4) { animation-delay: 0.25s; }
+    .transaction-item:nth-child(5) { animation-delay: 0.3s; }
 
     .transaction-item:last-child {
       border-bottom: none;
+    }
+
+    .transaction-item:hover {
+      background: #f9fafb;
+      transform: translateX(5px);
+      cursor: pointer;
     }
 
     .transaction-info {
@@ -191,31 +382,47 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.25rem;
+      transition: all 0.3s ease;
+    }
+
+    .transaction-icon svg {
+      width: 20px;
+      height: 20px;
     }
 
     .transaction-icon.deposit {
       background: #dcfce7;
+      color: #10b981;
     }
 
     .transaction-icon.withdrawal {
       background: #fee2e2;
+      color: #ef4444;
+    }
+
+    .transaction-item:hover .transaction-icon {
+      transform: scale(1.1) rotate(5deg);
     }
 
     .transaction-details h4 {
       font-size: 1rem;
       color: #065f46;
       margin-bottom: 0.25rem;
+      font-weight: 600;
     }
 
     .transaction-details p {
       font-size: 0.875rem;
       color: #6b7280;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
     }
 
     .transaction-amount {
       font-weight: 700;
       font-size: 1.1rem;
+      transition: all 0.3s ease;
     }
 
     .transaction-amount.positive {
@@ -226,16 +433,29 @@
       color: #ef4444;
     }
 
+    .transaction-item:hover .transaction-amount {
+      transform: scale(1.05);
+    }
+
     .empty-state {
       text-align: center;
       padding: 3rem 1rem;
       color: #6b7280;
+      animation: fadeIn 0.5s ease-out;
     }
 
     .empty-state-icon {
-      font-size: 3rem;
-      margin-bottom: 1rem;
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 1rem;
       opacity: 0.5;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .empty-state h3 {
+      color: #374151;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
     }
 
     .quick-actions {
@@ -255,11 +475,38 @@
       display: flex;
       align-items: center;
       gap: 1rem;
+      animation: scaleIn 0.5s ease-out;
+      animation-fill-mode: both;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .quick-action-card:nth-child(1) { animation-delay: 0.2s; }
+    .quick-action-card:nth-child(2) { animation-delay: 0.3s; }
+    .quick-action-card:nth-child(3) { animation-delay: 0.4s; }
+
+    .quick-action-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.1), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .quick-action-card:hover::before {
+      left: 100%;
     }
 
     .quick-action-card:hover {
       transform: translateY(-4px);
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .quick-action-card:active {
+      transform: translateY(-2px);
     }
 
     .quick-action-icon {
@@ -270,13 +517,25 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.5rem;
+      flex-shrink: 0;
+      transition: all 0.3s ease;
+    }
+
+    .quick-action-icon svg {
+      width: 24px;
+      height: 24px;
+      color: white;
+    }
+
+    .quick-action-card:hover .quick-action-icon {
+      transform: scale(1.1) rotate(5deg);
     }
 
     .quick-action-text h3 {
       font-size: 1rem;
       color: #065f46;
       margin-bottom: 0.25rem;
+      font-weight: 700;
     }
 
     .quick-action-text p {
@@ -290,6 +549,20 @@
       align-items: center;
       min-height: 100vh;
       font-size: 1.5rem;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .loading-spinner svg {
+      width: 48px;
+      height: 48px;
+      color: #047857;
+      animation: spin 1s linear infinite;
+    }
+
+    .loading-text {
+      color: #065f46;
+      font-weight: 600;
     }
 
     @media (max-width: 768px) {
@@ -308,6 +581,10 @@
       .quick-actions {
         grid-template-columns: 1fr;
       }
+
+      .user-greeting span {
+        display: none;
+      }
     }
   </style>
 </head>
@@ -322,7 +599,105 @@
   <script type="text/babel">
     const { useState, useEffect } = React;
 
-     const SUPABASE_URL = 'https://zbwteaziiasmfagaalve.supabase.co';
+    // Lucide Icons
+    const Wallet = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/>
+        <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/>
+        <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/>
+      </svg>
+    );
+
+    const User = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+    );
+
+    const LogOut = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" x2="9" y1="12" y2="12"/>
+      </svg>
+    );
+
+    const ArrowDownCircle = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <polyline points="8 12 12 16 16 12"/>
+        <line x1="12" x2="12" y1="8" y2="16"/>
+      </svg>
+    );
+
+    const ArrowUpCircle = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <polyline points="16 12 12 8 8 12"/>
+        <line x1="12" x2="12" y1="16" y2="8"/>
+      </svg>
+    );
+
+    const Building2 = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/>
+        <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/>
+        <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/>
+        <path d="M10 6h4"/>
+        <path d="M10 10h4"/>
+        <path d="M10 14h4"/>
+        <path d="M10 18h4"/>
+      </svg>
+    );
+
+    const CreditCard = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect width="20" height="14" x="2" y="5" rx="2"/>
+        <line x1="2" x2="22" y1="10" y2="10"/>
+      </svg>
+    );
+
+    const Send = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="22" x2="11" y1="2" y2="13"/>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    );
+
+    const Landmark = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="3" x2="21" y1="22" y2="22"/>
+        <line x1="6" x2="6" y1="18" y2="11"/>
+        <line x1="10" x2="10" y1="18" y2="11"/>
+        <line x1="14" x2="14" y1="18" y2="11"/>
+        <line x1="18" x2="18" y1="18" y2="11"/>
+        <polygon points="12 2 20 7 4 7"/>
+      </svg>
+    );
+
+    const Receipt = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z"/>
+        <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/>
+        <path d="M12 17V7"/>
+      </svg>
+    );
+
+    const Clock = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <polyline points="12 6 12 12 16 14"/>
+      </svg>
+    );
+
+    const Loader2 = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+      </svg>
+    );
+
+    const SUPABASE_URL = 'https://zbwteaziiasmfagaalve.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpid3RlYXppaWFzbWZhZ2FhbHZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczNDM4ODEsImV4cCI6MjA4MjkxOTg4MX0.ZOP4W0sIbv9BEnsQrthR6EfvDXJxtaYfSgNoGok8OsQ';
     
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -440,7 +815,8 @@
       if (loading) {
         return (
           <div className="loading-spinner">
-            Loading...
+            <Loader2 />
+            <div className="loading-text">Loading Dashboard...</div>
           </div>
         );
       }
@@ -449,11 +825,19 @@
         <>
           <header className="header">
             <div className="header-content">
-              <div className="logo-text">ReZA</div>
+              <div className="logo-text">
+                <div className="logo-icon">
+                  <Wallet />
+                </div>
+                ReZA
+              </div>
               <div className="user-info">
-                <span>Hello, {wallet?.full_name || user?.email}</span>
+                <div className="user-greeting">
+                  <User />
+                  <span>Hello, {wallet?.full_name || user?.email}</span>
+                </div>
                 <button className="logout-btn" onClick={handleLogout}>
-                  Logout
+                  <LogOut /> Logout
                 </button>
               </div>
             </div>
@@ -461,40 +845,49 @@
 
           <div className="container">
             <div className="balance-card">
-              <div className="balance-label">Your Balance</div>
+              <div className="balance-header">
+                <Wallet />
+                <div className="balance-label">Your Balance</div>
+              </div>
               <div className="balance-amount">
                 {formatCurrency(wallet?.balance)}
               </div>
               <div className="balance-actions">
                 <button className="action-btn btn-deposit" onClick={() => window.location.href = 'deposit.html'}>
-                  <span>↓</span> Deposit
+                  <ArrowDownCircle /> Deposit
                 </button>
                 <button className="action-btn btn-withdraw" onClick={() => window.location.href = 'withdraw.html'}>
-                  <span>↑</span> Withdraw
+                  <ArrowUpCircle /> Withdraw
                 </button>
                 <button className="action-btn btn-banks" onClick={() => window.location.href = 'banks.html'}>
-                  <span>🏦</span> Banks
+                  <Building2 /> Banks
                 </button>
               </div>
             </div>
 
             <div className="quick-actions">
               <div className="quick-action-card" onClick={() => window.location.href = 'deposit.html'}>
-                <div className="quick-action-icon">💳</div>
+                <div className="quick-action-icon">
+                  <CreditCard />
+                </div>
                 <div className="quick-action-text">
                   <h3>Add Money</h3>
                   <p>Deposit to your wallet</p>
                 </div>
               </div>
               <div className="quick-action-card" onClick={() => window.location.href = 'withdraw.html'}>
-                <div className="quick-action-icon">💸</div>
+                <div className="quick-action-icon">
+                  <Send />
+                </div>
                 <div className="quick-action-text">
                   <h3>Send Money</h3>
                   <p>Withdraw to bank</p>
                 </div>
               </div>
               <div className="quick-action-card" onClick={() => window.location.href = 'banks.html'}>
-                <div className="quick-action-icon">🏦</div>
+                <div className="quick-action-icon">
+                  <Landmark />
+                </div>
                 <div className="quick-action-text">
                   <h3>My Banks</h3>
                   <p>Manage accounts</p>
@@ -502,11 +895,16 @@
               </div>
             </div>
 
-            <h2 className="section-title">Recent Transactions</h2>
+            <h2 className="section-title">
+              <Receipt />
+              Recent Transactions
+            </h2>
             <div className="transactions-card">
               {transactions.length === 0 ? (
                 <div className="empty-state">
-                  <div className="empty-state-icon">📊</div>
+                  <div className="empty-state-icon">
+                    <Receipt />
+                  </div>
                   <h3>No transactions yet</h3>
                   <p>Your transaction history will appear here</p>
                 </div>
@@ -515,17 +913,20 @@
                   <div key={transaction.id} className="transaction-item">
                     <div className="transaction-info">
                       <div className={`transaction-icon ${transaction.type}`}>
-                        {transaction.type === 'deposit' ? '↓' : '↑'}
+                        {transaction.type === 'deposit' ? <ArrowDownCircle /> : <ArrowUpCircle />}
                       </div>
                       <div className="transaction-details">
                         <h4>{transaction.description}</h4>
-                        <p>{new Date(transaction.created_at).toLocaleDateString('en-ZA', { 
-                          day: 'numeric', 
-                          month: 'short', 
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}</p>
+                        <p>
+                          <Clock />
+                          {new Date(transaction.created_at).toLocaleDateString('en-ZA', { 
+                            day: 'numeric', 
+                            month: 'short', 
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
                       </div>
                     </div>
                     <div className={`transaction-amount ${transaction.type === 'deposit' ? 'positive' : 'negative'}`}>
