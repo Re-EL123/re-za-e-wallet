@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#065f46">
+  <title>Dashboard - ReZA</title>
+  <link rel="manifest" href="manifest.json">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #f0fdf4;
+      min-height: 100vh;
+      color: #065f46;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+      color: white;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo-text {
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logout-btn {
+      background: rgba(251, 191, 36, 0.2);
+      border: 2px solid #fbbf24;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .logout-btn:hover {
+      background: rgba(251, 191, 36, 0.3);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    .balance-card {
+      background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+      color: white;
+      border-radius: 24px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 20px 60px rgba(6, 95, 70, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .balance-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(251, 191, 36, 0.2) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .balance-label {
+      font-size: 0.95rem;
+      color: #d1fae5;
+      margin-bottom: 0.5rem;
+    }
+
+    .balance-amount {
+      font-size: 3rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .balance-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      flex: 1;
+      min-width: 150px;
+      padding: 0.875rem 1.5rem;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn-deposit {
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      color: #065f46;
+    }
+
+    .btn-withdraw {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid rgba(251, 191, 36, 0.5);
+    }
+
+    .btn-banks {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid rgba(251, 191, 36, 0.5);
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #065f46;
+      margin-bottom: 1rem;
+    }
+
+    .transactions-card {
+      background: white;
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .transaction-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .transaction-item:last-child {
+      border-bottom: none;
+    }
+
+    .transaction-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .transaction-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+
+    .transaction-icon.deposit {
+      background: #dcfce7;
+    }
+
+    .transaction-icon.withdrawal {
+      background: #fee2e2;
+    }
+
+    .transaction-details h4 {
+      font-size: 1rem;
+      color: #065f46;
+      margin-bottom: 0.25rem;
+    }
+
+    .transaction-details p {
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+
+    .transaction-amount {
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .transaction-amount.positive {
+      color: #10b981;
+    }
+
+    .transaction-amount.negative {
+      color: #ef4444;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #6b7280;
+    }
+
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .quick-action-card {
+      background: white;
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .quick-action-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .quick-action-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    .quick-action-text h3 {
+      font-size: 1rem;
+      color: #065f46;
+      margin-bottom: 0.25rem;
+    }
+
+    .quick-action-text p {
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+
+    .loading-spinner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-size: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .balance-amount {
+        font-size: 2.5rem;
+      }
+
+      .balance-actions {
+        flex-direction: column;
+      }
+
+      .action-btn {
+        min-width: 100%;
+      }
+
+      .quick-actions {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const SUPABASE_URL = 'https://bwcjqkfribgfmxklqqow.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3Y2pxa2ZyaWJnZm14a2xxcW93Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkzNzg4MDYsImV4cCI6MjA2NDk1NDgwNn0.W0xdZMQKTlU5y5hGGwlYJD_MqKVMvCCVr3TZwHRvBng';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function Dashboard() {
+      const [user, setUser] = useState(null);
+      const [wallet, setWallet] = useState(null);
+      const [loading, setLoading] = useState(true);
+      const [transactions, setTransactions] = useState([]);
+
+      useEffect(() => {
+        const initDashboard = async () => {
+          // Get current session
+          const { data: { session } } = await supabase.auth.getSession();
+          
+          if (!session) {
+            window.location.href = 'login.html';
+            return;
+          }
+
+          setUser(session.user);
+
+          // Fetch wallet data
+          const { data: walletData, error: walletError } = await supabase
+            .from('wallets')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+          if (walletError && walletError.code === 'PGRST116') {
+            // Create wallet if it doesn't exist
+            const { data: newWallet, error: createError } = await supabase
+              .from('wallets')
+              .insert({
+                id: session.user.id,
+                full_name: session.user.user_metadata?.full_name || 'User',
+                email: session.user.email,
+                phone: session.user.user_metadata?.phone || '',
+                balance: 0.00,
+                currency: 'ZAR'
+              })
+              .select()
+              .single();
+
+            if (!createError) {
+              setWallet(newWallet);
+            }
+          } else if (walletData) {
+            setWallet(walletData);
+          }
+
+          // Fetch transactions
+          const { data: transactionsData } = await supabase
+            .from('transactions')
+            .select('*')
+            .eq('user_id', session.user.id)
+            .order('created_at', { ascending: false })
+            .limit(10);
+
+          if (transactionsData) {
+            setTransactions(transactionsData);
+          }
+
+          setLoading(false);
+
+          // Subscribe to realtime updates for wallet
+          const walletSubscription = supabase
+            .channel('wallet-changes')
+            .on('postgres_changes', {
+              event: '*',
+              schema: 'public',
+              table: 'wallets',
+              filter: `id=eq.${session.user.id}`
+            }, (payload) => {
+              if (payload.new) {
+                setWallet(payload.new);
+              }
+            })
+            .subscribe();
+
+          // Subscribe to realtime updates for transactions
+          const transactionsSubscription = supabase
+            .channel('transactions-changes')
+            .on('postgres_changes', {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'transactions',
+              filter: `user_id=eq.${session.user.id}`
+            }, (payload) => {
+              setTransactions(prev => [payload.new, ...prev].slice(0, 10));
+            })
+            .subscribe();
+
+          return () => {
+            supabase.removeChannel(walletSubscription);
+            supabase.removeChannel(transactionsSubscription);
+          };
+        };
+
+        initDashboard();
+      }, []);
+
+      const handleLogout = async () => {
+        await supabase.auth.signOut();
+        window.location.href = 'index.html';
+      };
+
+      const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('en-ZA', {
+          style: 'currency',
+          currency: 'ZAR'
+        }).format(amount || 0);
+      };
+
+      if (loading) {
+        return (
+          <div className="loading-spinner">
+            Loading...
+          </div>
+        );
+      }
+
+      return (
+        <>
+          <header className="header">
+            <div className="header-content">
+              <div className="logo-text">ReZA</div>
+              <div className="user-info">
+                <span>Hello, {wallet?.full_name || user?.email}</span>
+                <button className="logout-btn" onClick={handleLogout}>
+                  Logout
+                </button>
+              </div>
+            </div>
+          </header>
+
+          <div className="container">
+            <div className="balance-card">
+              <div className="balance-label">Your Balance</div>
+              <div className="balance-amount">
+                {formatCurrency(wallet?.balance)}
+              </div>
+              <div className="balance-actions">
+                <button className="action-btn btn-deposit" onClick={() => window.location.href = 'deposit.html'}>
+                  <span>↓</span> Deposit
+                </button>
+                <button className="action-btn btn-withdraw" onClick={() => window.location.href = 'withdraw.html'}>
+                  <span>↑</span> Withdraw
+                </button>
+                <button className="action-btn btn-banks" onClick={() => window.location.href = 'banks.html'}>
+                  <span>🏦</span> Banks
+                </button>
+              </div>
+            </div>
+
+            <div className="quick-actions">
+              <div className="quick-action-card" onClick={() => window.location.href = 'deposit.html'}>
+                <div className="quick-action-icon">💳</div>
+                <div className="quick-action-text">
+                  <h3>Add Money</h3>
+                  <p>Deposit to your wallet</p>
+                </div>
+              </div>
+              <div className="quick-action-card" onClick={() => window.location.href = 'withdraw.html'}>
+                <div className="quick-action-icon">💸</div>
+                <div className="quick-action-text">
+                  <h3>Send Money</h3>
+                  <p>Withdraw to bank</p>
+                </div>
+              </div>
+              <div className="quick-action-card" onClick={() => window.location.href = 'banks.html'}>
+                <div className="quick-action-icon">🏦</div>
+                <div className="quick-action-text">
+                  <h3>My Banks</h3>
+                  <p>Manage accounts</p>
+                </div>
+              </div>
+            </div>
+
+            <h2 className="section-title">Recent Transactions</h2>
+            <div className="transactions-card">
+              {transactions.length === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-state-icon">📊</div>
+                  <h3>No transactions yet</h3>
+                  <p>Your transaction history will appear here</p>
+                </div>
+              ) : (
+                transactions.map((transaction) => (
+                  <div key={transaction.id} className="transaction-item">
+                    <div className="transaction-info">
+                      <div className={`transaction-icon ${transaction.type}`}>
+                        {transaction.type === 'deposit' ? '↓' : '↑'}
+                      </div>
+                      <div className="transaction-details">
+                        <h4>{transaction.description}</h4>
+                        <p>{new Date(transaction.created_at).toLocaleDateString('en-ZA', { 
+                          day: 'numeric', 
+                          month: 'short', 
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}</p>
+                      </div>
+                    </div>
+                    <div className={`transaction-amount ${transaction.type === 'deposit' ? 'positive' : 'negative'}`}>
+                      {transaction.type === 'deposit' ? '+' : '-'}{formatCurrency(Math.abs(transaction.amount))}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </>
+      );
+    }
+
+    ReactDOM.render(<Dashboard />, document.getElementById('root'));
+  </script>
+</body>
+</html>

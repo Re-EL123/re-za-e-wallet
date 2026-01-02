@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#065f46">
+  <title>Deposit - ReZA</title>
+  <link rel="manifest" href="manifest.json">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #f0fdf4;
+      min-height: 100vh;
+      color: #065f46;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+      color: white;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .back-btn {
+      background: rgba(251, 191, 36, 0.2);
+      border: 2px solid #fbbf24;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .back-btn:hover {
+      background: rgba(251, 191, 36, 0.3);
+    }
+
+    .header-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      margin-bottom: 1.5rem;
+    }
+
+    .amount-input-group {
+      margin-bottom: 2rem;
+    }
+
+    .amount-label {
+      font-size: 0.95rem;
+      color: #6b7280;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .amount-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .currency-symbol {
+      position: absolute;
+      left: 1rem;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #065f46;
+    }
+
+    .amount-input {
+      width: 100%;
+      padding: 1rem 1rem 1rem 3rem;
+      font-size: 2rem;
+      font-weight: 700;
+      border: 3px solid #d1fae5;
+      border-radius: 12px;
+      color: #065f46;
+      transition: all 0.3s ease;
+    }
+
+    .amount-input:focus {
+      outline: none;
+      border-color: #fbbf24;
+    }
+
+    .quick-amounts {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .quick-amount-btn {
+      padding: 0.75rem;
+      border: 2px solid #d1fae5;
+      background: white;
+      color: #065f46;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .quick-amount-btn:hover {
+      background: #f0fdf4;
+      border-color: #fbbf24;
+    }
+
+    .payment-methods {
+      margin-bottom: 2rem;
+    }
+
+    .method-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #065f46;
+      margin-bottom: 1rem;
+    }
+
+    .method-option {
+      display: flex;
+      align-items: center;
+      padding: 1rem;
+      border: 2px solid #d1fae5;
+      border-radius: 12px;
+      margin-bottom: 0.75rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .method-option:hover {
+      border-color: #fbbf24;
+      background: #f0fdf4;
+    }
+
+    .method-option.selected {
+      border-color: #fbbf24;
+      background: #fffbeb;
+    }
+
+    .method-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-right: 1rem;
+    }
+
+    .method-info h3 {
+      font-size: 1rem;
+      color: #065f46;
+      margin-bottom: 0.25rem;
+    }
+
+    .method-info p {
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+
+    .deposit-btn {
+      width: 100%;
+      padding: 1rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      color: #065f46;
+      box-shadow: 0 10px 30px rgba(251, 191, 36, 0.3);
+    }
+
+    .deposit-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 40px rgba(251, 191, 36, 0.4);
+    }
+
+    .deposit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .info-box {
+      background: #eff6ff;
+      border: 2px solid #3b82f6;
+      border-radius: 12px;
+      padding: 1rem;
+      color: #1e40af;
+      font-size: 0.875rem;
+      margin-top: 1rem;
+    }
+
+    .error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 2px solid #ef4444;
+      color: #dc2626;
+      padding: 0.875rem;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    .error.show {
+      display: block;
+    }
+
+    .success {
+      background: rgba(34, 197, 94, 0.1);
+      border: 2px solid #22c55e;
+      color: #16a34a;
+      padding: 0.875rem;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    .success.show {
+      display: block;
+    }
+
+    @media (max-width: 640px) {
+      .quick-amounts {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const SUPABASE_URL = 'https://bwcjqkfribgfmxklqqow.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3Y2pxa2ZyaWJnZm14a2xxcW93Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkzNzg4MDYsImV4cCI6MjA2NDk1NDgwNn0.W0xdZMQKTlU5y5hGGwlYJD_MqKVMvCCVr3TZwHRvBng';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // iKhokha API credentials
+    const IKHOKHA_APP_ID = 'IKUYN0WT5869GD75KEWWTPNU13BAEYP6';
+
+    function DepositPage() {
+      const [user, setUser] = useState(null);
+      const [amount, setAmount] = useState('');
+      const [selectedMethod, setSelectedMethod] = useState('card');
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState('');
+      const [success, setSuccess] = useState('');
+
+      useEffect(() => {
+        const checkAuth = async () => {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) {
+            window.location.href = 'login.html';
+            return;
+          }
+          setUser(session.user);
+
+          // Check for payment callback
+          const urlParams = new URLSearchParams(window.location.search);
+          const paymentStatus = urlParams.get('payment');
+          const paymentAmount = urlParams.get('amount');
+          
+          if (paymentStatus === 'success' && paymentAmount) {
+            await processSuccessfulPayment(session.user.id, parseFloat(paymentAmount));
+          } else if (paymentStatus === 'cancelled') {
+            setError('Payment was cancelled. Please try again.');
+          }
+        };
+        checkAuth();
+      }, []);
+
+      const processSuccessfulPayment = async (userId, depositAmount) => {
+        try {
+          // Call the process_deposit function
+          const { data, error: depositError } = await supabase.rpc('process_deposit', {
+            p_user_id: userId,
+            p_amount: depositAmount,
+            p_description: `Deposit via iKhokha - ${formatCurrency(depositAmount)}`,
+            p_payment_method: 'card',
+            p_reference: `IK-${Date.now()}`
+          });
+
+          if (depositError) throw depositError;
+
+          setSuccess(`Successfully deposited ${formatCurrency(depositAmount)}!`);
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 2000);
+        } catch (err) {
+          console.error('[v0] Process deposit error:', err);
+          setError('Payment received but failed to update balance. Please contact support.');
+        }
+      };
+
+      const quickAmounts = [50, 100, 200, 500, 1000, 2000];
+
+      const handleQuickAmount = (value) => {
+        setAmount(value.toString());
+      };
+
+      const handlePayment = async () => {
+        const depositAmount = parseFloat(amount);
+        
+        if (!depositAmount || depositAmount <= 0) {
+          setError('Please enter a valid amount');
+          return;
+        }
+
+        if (depositAmount < 10) {
+          setError('Minimum deposit is R10.00');
+          return;
+        }
+
+        setLoading(true);
+        setError('');
+
+        try {
+          if (selectedMethod === 'card') {
+            // For demo/testing: Simulate successful payment
+            // In production, you would redirect to iKhokha payment page
+            const confirmPayment = confirm(`Process payment of ${formatCurrency(depositAmount)} via iKhokha?\n\n(Demo Mode: This will simulate a successful payment)`);
+            
+            if (confirmPayment) {
+              // Process the deposit directly (demo mode)
+              const { data, error: depositError } = await supabase.rpc('process_deposit', {
+                p_user_id: user.id,
+                p_amount: depositAmount,
+                p_description: `Deposit via iKhokha - ${formatCurrency(depositAmount)}`,
+                p_payment_method: 'card',
+                p_reference: `IK-${Date.now()}`
+              });
+
+              if (depositError) throw depositError;
+
+              setSuccess(`Successfully deposited ${formatCurrency(depositAmount)}!`);
+              setAmount('');
+              setTimeout(() => {
+                window.location.href = 'dashboard.html';
+              }, 2000);
+            } else {
+              setLoading(false);
+            }
+          } else {
+            // EFT - instant for demo
+            const { data, error: depositError } = await supabase.rpc('process_deposit', {
+              p_user_id: user.id,
+              p_amount: depositAmount,
+              p_description: `EFT Deposit - ${formatCurrency(depositAmount)}`,
+              p_payment_method: 'eft',
+              p_reference: `EFT-${Date.now()}`
+            });
+
+            if (depositError) throw depositError;
+
+            setSuccess(`Successfully deposited ${formatCurrency(depositAmount)}!`);
+            setAmount('');
+            setTimeout(() => {
+              window.location.href = 'dashboard.html';
+            }, 2000);
+          }
+
+        } catch (err) {
+          console.error('[v0] Payment error:', err);
+          setError(err.message || 'Failed to process payment. Please try again.');
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const formatCurrency = (value) => {
+        return new Intl.NumberFormat('en-ZA', {
+          style: 'currency',
+          currency: 'ZAR'
+        }).format(value);
+      };
+
+      return (
+        <>
+          <header className="header">
+            <div className="header-content">
+              <button className="back-btn" onClick={() => window.location.href = 'dashboard.html'}>
+                ← Back
+              </button>
+              <div className="header-title">Deposit Money</div>
+            </div>
+          </header>
+
+          <div className="container">
+            <div className="card">
+              {error && <div className="error show">{error}</div>}
+              {success && <div className="success show">{success}</div>}
+
+              <div className="amount-input-group">
+                <label className="amount-label">Enter Amount</label>
+                <div className="amount-input-wrapper">
+                  <span className="currency-symbol">R</span>
+                  <input
+                    type="number"
+                    className="amount-input"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="0.00"
+                    disabled={loading}
+                    min="10"
+                    step="0.01"
+                  />
+                </div>
+                <div className="quick-amounts">
+                  {quickAmounts.map((value) => (
+                    <button
+                      key={value}
+                      className="quick-amount-btn"
+                      onClick={() => handleQuickAmount(value)}
+                      disabled={loading}
+                    >
+                      R{value}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="payment-methods">
+                <div className="method-title">Payment Method</div>
+                
+                <div
+                  className={`method-option ${selectedMethod === 'card' ? 'selected' : ''}`}
+                  onClick={() => !loading && setSelectedMethod('card')}
+                >
+                  <div className="method-icon">💳</div>
+                  <div className="method-info">
+                    <h3>Credit/Debit Card</h3>
+                    <p>Powered by iKhokha - Instant</p>
+                  </div>
+                </div>
+
+                <div
+                  className={`method-option ${selectedMethod === 'eft' ? 'selected' : ''}`}
+                  onClick={() => !loading && setSelectedMethod('eft')}
+                >
+                  <div className="method-icon">🏦</div>
+                  <div className="method-info">
+                    <h3>EFT/Bank Transfer</h3>
+                    <p>Instant (Demo Mode)</p>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                className="deposit-btn"
+                onClick={handlePayment}
+                disabled={loading || !amount}
+              >
+                {loading ? 'Processing...' : `Deposit ${amount ? formatCurrency(parseFloat(amount)) : 'Amount'}`}
+              </button>
+
+              <div className="info-box">
+                Secure payments powered by iKhokha. Your card details are never stored on our servers.
+              </div>
+            </div>
+          </div>
+        </>
+      );
+    }
+
+    ReactDOM.render(<DepositPage />, document.getElementById('root'));
+  </script>
+</body>
+</html>

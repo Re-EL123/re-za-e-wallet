@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#065f46">
+  <title>Withdraw - ReZA</title>
+  <link rel="manifest" href="manifest.json">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #f0fdf4;
+      min-height: 100vh;
+      color: #065f46;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+      color: white;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .back-btn {
+      background: rgba(251, 191, 36, 0.2);
+      border: 2px solid #fbbf24;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .back-btn:hover {
+      background: rgba(251, 191, 36, 0.3);
+    }
+
+    .header-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      margin-bottom: 1.5rem;
+    }
+
+    .balance-display {
+      background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+      color: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .balance-label {
+      font-size: 0.875rem;
+      color: #d1fae5;
+      margin-bottom: 0.5rem;
+    }
+
+    .balance-amount {
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #065f46;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.875rem 1rem;
+      border: 2px solid #d1fae5;
+      border-radius: 12px;
+      font-size: 1rem;
+      color: #065f46;
+      transition: all 0.3s ease;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #fbbf24;
+    }
+
+    .amount-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .currency-symbol {
+      position: absolute;
+      left: 1rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #065f46;
+    }
+
+    .amount-input {
+      padding-left: 2.5rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .withdraw-btn {
+      width: 100%;
+      padding: 1rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      color: #065f46;
+      box-shadow: 0 10px 30px rgba(251, 191, 36, 0.3);
+    }
+
+    .withdraw-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 40px rgba(251, 191, 36, 0.4);
+    }
+
+    .withdraw-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 2px solid #ef4444;
+      color: #dc2626;
+      padding: 0.875rem;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    .error.show {
+      display: block;
+    }
+
+    .success {
+      background: rgba(34, 197, 94, 0.1);
+      border: 2px solid #22c55e;
+      color: #16a34a;
+      padding: 0.875rem;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    .success.show {
+      display: block;
+    }
+
+    .info-box {
+      background: #eff6ff;
+      border: 2px solid #3b82f6;
+      border-radius: 12px;
+      padding: 1rem;
+      color: #1e40af;
+      font-size: 0.875rem;
+      margin-top: 1rem;
+    }
+
+    .add-bank-link {
+      color: #047857;
+      text-decoration: underline;
+      cursor: pointer;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const SUPABASE_URL = 'https://bwcjqkfribgfmxklqqow.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3Y2pxa2ZyaWJnZm14a2xxcW93Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkzNzg4MDYsImV4cCI6MjA2NDk1NDgwNn0.W0xdZMQKTlU5y5hGGwlYJD_MqKVMvCCVr3TZwHRvBng';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function WithdrawPage() {
+      const [user, setUser] = useState(null);
+      const [wallet, setWallet] = useState(null);
+      const [bankAccounts, setBankAccounts] = useState([]);
+      const [amount, setAmount] = useState('');
+      const [selectedBank, setSelectedBank] = useState('');
+      const [loading, setLoading] = useState(false);
+      const [pageLoading, setPageLoading] = useState(true);
+      const [error, setError] = useState('');
+      const [success, setSuccess] = useState('');
+
+      useEffect(() => {
+        const initPage = async () => {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) {
+            window.location.href = 'login.html';
+            return;
+          }
+          setUser(session.user);
+
+          // Fetch wallet
+          const { data: walletData } = await supabase
+            .from('wallets')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+          if (walletData) {
+            setWallet(walletData);
+          }
+
+          // Fetch bank accounts
+          const { data: banksData } = await supabase
+            .from('bank_accounts')
+            .select('*')
+            .eq('user_id', session.user.id)
+            .order('created_at', { ascending: false });
+
+          if (banksData) {
+            setBankAccounts(banksData);
+          }
+
+          setPageLoading(false);
+        };
+        initPage();
+      }, []);
+
+      const handleWithdraw = async (e) => {
+        e.preventDefault();
+        
+        const withdrawAmount = parseFloat(amount);
+        
+        if (!withdrawAmount || withdrawAmount <= 0) {
+          setError('Please enter a valid amount');
+          return;
+        }
+
+        if (withdrawAmount < 10) {
+          setError('Minimum withdrawal is R10.00');
+          return;
+        }
+
+        if (withdrawAmount > wallet.balance) {
+          setError('Insufficient balance');
+          return;
+        }
+
+        if (!selectedBank) {
+          setError('Please select a bank account');
+          return;
+        }
+
+        setLoading(true);
+        setError('');
+
+        try {
+          const selectedBankData = bankAccounts.find(b => b.id === selectedBank);
+          
+          // Process withdrawal using the database function
+          const { data, error: withdrawError } = await supabase.rpc('process_withdrawal', {
+            p_user_id: user.id,
+            p_amount: withdrawAmount,
+            p_description: `Withdrawal to ${selectedBankData.bank_name} - ***${selectedBankData.account_number.slice(-4)}`,
+            p_bank_account_id: selectedBank
+          });
+
+          if (withdrawError) throw withdrawError;
+
+          setSuccess(`Successfully withdrew ${formatCurrency(withdrawAmount)}!`);
+          setAmount('');
+          setSelectedBank('');
+
+          // Update local wallet state
+          setWallet(prev => ({
+            ...prev,
+            balance: data.new_balance
+          }));
+
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 2000);
+
+        } catch (err) {
+          console.error('[v0] Withdrawal error:', err);
+          setError(err.message || 'Failed to process withdrawal. Please try again.');
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const formatCurrency = (value) => {
+        return new Intl.NumberFormat('en-ZA', {
+          style: 'currency',
+          currency: 'ZAR'
+        }).format(value || 0);
+      };
+
+      if (pageLoading) {
+        return (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+            <div style={{ fontSize: '1.5rem' }}>Loading...</div>
+          </div>
+        );
+      }
+
+      return (
+        <>
+          <header className="header">
+            <div className="header-content">
+              <button className="back-btn" onClick={() => window.location.href = 'dashboard.html'}>
+                ← Back
+              </button>
+              <div className="header-title">Withdraw Money</div>
+            </div>
+          </header>
+
+          <div className="container">
+            <div className="card">
+              <div className="balance-display">
+                <div className="balance-label">Available Balance</div>
+                <div className="balance-amount">
+                  {formatCurrency(wallet?.balance)}
+                </div>
+              </div>
+
+              {error && <div className="error show">{error}</div>}
+              {success && <div className="success show">{success}</div>}
+
+              <form onSubmit={handleWithdraw}>
+                <div className="form-group">
+                  <label>Withdrawal Amount</label>
+                  <div className="amount-input-wrapper">
+                    <span className="currency-symbol">R</span>
+                    <input
+                      type="number"
+                      className="amount-input"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      placeholder="0.00"
+                      disabled={loading}
+                      min="10"
+                      step="0.01"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Bank Account</label>
+                  {bankAccounts.length === 0 ? (
+                    <div style={{ padding: '1rem', textAlign: 'center', color: '#6b7280' }}>
+                      No bank accounts linked. 
+                      <span className="add-bank-link" onClick={() => window.location.href = 'banks.html'}>
+                        Add one now
+                      </span>
+                    </div>
+                  ) : (
+                    <select
+                      value={selectedBank}
+                      onChange={(e) => setSelectedBank(e.target.value)}
+                      disabled={loading}
+                      required
+                    >
+                      <option value="">Select a bank account</option>
+                      {bankAccounts.map((bank) => (
+                        <option key={bank.id} value={bank.id}>
+                          {bank.bank_name} - ***{bank.account_number.slice(-4)}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  className="withdraw-btn"
+                  disabled={loading || !amount || bankAccounts.length === 0}
+                >
+                  {loading ? 'Processing...' : `Withdraw ${amount ? formatCurrency(parseFloat(amount)) : 'Amount'}`}
+                </button>
+
+                <div className="info-box">
+                  Withdrawals are processed securely. Funds will be transferred to your selected bank account within 1-2 business days.
+                </div>
+              </form>
+            </div>
+          </div>
+        </>
+      );
+    }
+
+    ReactDOM.render(<WithdrawPage />, document.getElementById('root'));
+  </script>
+</body>
+</html>
