@@ -14,6 +14,99 @@
       box-sizing: border-box;
     }
 
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInFromTop {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInFromLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes modalSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.8;
+        transform: scale(1.05);
+      }
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
       background: #f0fdf4;
@@ -26,6 +119,10 @@
       color: white;
       padding: 1.5rem;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      animation: slideInFromTop 0.5s ease-out;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
 
     .header-content {
@@ -51,15 +148,22 @@
       cursor: pointer;
       font-weight: 600;
       transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
     .back-btn:hover {
       background: rgba(251, 191, 36, 0.3);
+      transform: translateX(-5px);
     }
 
     .header-title {
       font-size: 1.5rem;
       font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
     .add-bank-btn {
@@ -71,16 +175,38 @@
       cursor: pointer;
       font-weight: 600;
       transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .add-bank-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .add-bank-btn:hover::before {
+      left: 100%;
     }
 
     .add-bank-btn:hover {
       transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
     }
 
     .container {
       max-width: 1200px;
       margin: 0 auto;
       padding: 2rem 1rem;
+      animation: fadeIn 0.6s ease-out;
     }
 
     .banks-grid {
@@ -97,7 +223,16 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
       position: relative;
       transition: all 0.3s ease;
+      animation: scaleIn 0.5s ease-out;
+      animation-fill-mode: both;
     }
+
+    .bank-card:nth-child(1) { animation-delay: 0.1s; }
+    .bank-card:nth-child(2) { animation-delay: 0.15s; }
+    .bank-card:nth-child(3) { animation-delay: 0.2s; }
+    .bank-card:nth-child(4) { animation-delay: 0.25s; }
+    .bank-card:nth-child(5) { animation-delay: 0.3s; }
+    .bank-card:nth-child(6) { animation-delay: 0.35s; }
 
     .bank-card:hover {
       transform: translateY(-4px);
@@ -119,7 +254,17 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .bank-icon svg {
+      width: 28px;
+      height: 28px;
+      color: white;
+    }
+
+    .bank-card:hover .bank-icon {
+      transform: scale(1.1) rotate(5deg);
     }
 
     .delete-btn {
@@ -132,10 +277,19 @@
       font-weight: 600;
       font-size: 0.875rem;
       transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
     .delete-btn:hover {
       background: #fecaca;
+      transform: scale(1.05);
+    }
+
+    .delete-btn svg {
+      width: 16px;
+      height: 16px;
     }
 
     .bank-name {
@@ -153,6 +307,16 @@
 
     .bank-details div {
       margin-bottom: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .bank-details svg {
+      width: 14px;
+      height: 14px;
+      color: #047857;
+      flex-shrink: 0;
     }
 
     .account-number {
@@ -166,18 +330,28 @@
       text-align: center;
       padding: 4rem 1rem;
       color: #6b7280;
+      animation: fadeIn 0.6s ease-out;
     }
 
     .empty-state-icon {
-      font-size: 4rem;
-      margin-bottom: 1rem;
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1.5rem;
       opacity: 0.5;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .empty-state-icon svg {
+      width: 100%;
+      height: 100%;
+      color: #9ca3af;
     }
 
     .empty-state h3 {
       font-size: 1.5rem;
       color: #065f46;
       margin-bottom: 0.5rem;
+      font-weight: 700;
     }
 
     .modal {
@@ -196,6 +370,7 @@
 
     .modal.show {
       display: flex;
+      animation: modalFadeIn 0.3s ease-out;
     }
 
     .modal-content {
@@ -206,6 +381,7 @@
       width: 100%;
       max-height: 90vh;
       overflow-y: auto;
+      animation: modalSlideUp 0.4s ease-out;
     }
 
     .modal-header {
@@ -219,6 +395,9 @@
       font-size: 1.5rem;
       font-weight: 700;
       color: #065f46;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
     .close-btn {
@@ -233,17 +412,47 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: all 0.3s ease;
+      border-radius: 8px;
+    }
+
+    .close-btn:hover {
+      background: #f3f4f6;
+      color: #065f46;
+      transform: rotate(90deg);
+    }
+
+    .close-btn svg {
+      width: 24px;
+      height: 24px;
     }
 
     .form-group {
       margin-bottom: 1.5rem;
+      animation: slideInFromLeft 0.5s ease-out;
+      animation-fill-mode: both;
     }
+
+    .form-group:nth-child(1) { animation-delay: 0.1s; }
+    .form-group:nth-child(2) { animation-delay: 0.15s; }
+    .form-group:nth-child(3) { animation-delay: 0.2s; }
+    .form-group:nth-child(4) { animation-delay: 0.25s; }
+    .form-group:nth-child(5) { animation-delay: 0.3s; }
 
     label {
       display: block;
       margin-bottom: 0.5rem;
       font-weight: 600;
       color: #065f46;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    label svg {
+      width: 18px;
+      height: 18px;
+      color: #fbbf24;
     }
 
     input, select {
@@ -254,11 +463,23 @@
       font-size: 1rem;
       color: #065f46;
       transition: all 0.3s ease;
+      background: white;
     }
 
     input:focus, select:focus {
       outline: none;
       border-color: #fbbf24;
+      transform: scale(1.02);
+      box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+    }
+
+    select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23065f46' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      padding-right: 3rem;
     }
 
     .submit-btn {
@@ -275,6 +496,27 @@
       background: linear-gradient(135deg, #fbbf24, #f59e0b);
       color: #065f46;
       box-shadow: 0 10px 30px rgba(251, 191, 36, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .submit-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .submit-btn:hover:not(:disabled)::before {
+      left: 100%;
     }
 
     .submit-btn:hover:not(:disabled) {
@@ -287,6 +529,10 @@
       cursor: not-allowed;
     }
 
+    .loading-spinner {
+      animation: spin 1s linear infinite;
+    }
+
     .error {
       background: rgba(239, 68, 68, 0.1);
       border: 2px solid #ef4444;
@@ -295,10 +541,19 @@
       border-radius: 12px;
       margin-bottom: 1rem;
       display: none;
+      animation: scaleIn 0.3s ease-out;
+      align-items: center;
+      gap: 0.75rem;
     }
 
     .error.show {
-      display: block;
+      display: flex;
+    }
+
+    .error svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
     }
 
     .success {
@@ -309,10 +564,40 @@
       border-radius: 12px;
       margin-bottom: 1rem;
       display: none;
+      animation: scaleIn 0.3s ease-out;
+      align-items: center;
+      gap: 0.75rem;
     }
 
     .success.show {
-      display: block;
+      display: flex;
+    }
+
+    .success svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .page-loader {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .page-loader svg {
+      width: 48px;
+      height: 48px;
+      color: #047857;
+    }
+
+    .page-loader-text {
+      font-size: 1.25rem;
+      color: #065f46;
+      font-weight: 600;
     }
 
     @media (max-width: 768px) {
@@ -339,7 +624,121 @@
   <script type="text/babel">
     const { useState, useEffect } = React;
 
-     const SUPABASE_URL = 'https://zbwteaziiasmfagaalve.supabase.co';
+    // Lucide Icons
+    const ArrowLeft = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="m12 19-7-7 7-7"/>
+        <path d="M19 12H5"/>
+      </svg>
+    );
+
+    const Landmark = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="3" x2="21" y1="22" y2="22"/>
+        <line x1="6" x2="6" y1="18" y2="11"/>
+        <line x1="10" x2="10" y1="18" y2="11"/>
+        <line x1="14" x2="14" y1="18" y2="11"/>
+        <line x1="18" x2="18" y1="18" y2="11"/>
+        <polygon points="12 2 20 7 4 7"/>
+      </svg>
+    );
+
+    const Plus = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M5 12h14"/>
+        <path d="M12 5v14"/>
+      </svg>
+    );
+
+    const Trash2 = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 6h18"/>
+        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+        <line x1="10" x2="10" y1="11" y2="17"/>
+        <line x1="14" x2="14" y1="11" y2="17"/>
+      </svg>
+    );
+
+    const X = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M18 6 6 18"/>
+        <path d="m6 6 12 12"/>
+      </svg>
+    );
+
+    const Building2 = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/>
+        <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/>
+        <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/>
+        <path d="M10 6h4"/>
+        <path d="M10 10h4"/>
+        <path d="M10 14h4"/>
+        <path d="M10 18h4"/>
+      </svg>
+    );
+
+    const User = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+    );
+
+    const Hash = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="4" x2="20" y1="9" y2="9"/>
+        <line x1="4" x2="20" y1="15" y2="15"/>
+        <line x1="10" x2="8" y1="3" y2="21"/>
+        <line x1="16" x2="14" y1="3" y2="21"/>
+      </svg>
+    );
+
+    const CreditCard = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect width="20" height="14" x="2" y="5" rx="2"/>
+        <line x1="2" x2="22" y1="10" y2="10"/>
+      </svg>
+    );
+
+    const GitBranch = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="6" x2="6" y1="3" y2="15"/>
+        <circle cx="18" cy="6" r="3"/>
+        <circle cx="6" cy="18" r="3"/>
+        <path d="M18 9a9 9 0 0 1-9 9"/>
+      </svg>
+    );
+
+    const Check = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    );
+
+    const AlertCircle = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" x2="12" y1="8" y2="12"/>
+        <line x1="12" x2="12.01" y1="16" y2="16"/>
+      </svg>
+    );
+
+    const CheckCircle = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+    );
+
+    const Loader2 = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="loading-spinner">
+        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+      </svg>
+    );
+
+    const SUPABASE_URL = 'https://zbwteaziiasmfagaalve.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpid3RlYXppaWFzbWZhZ2FhbHZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczNDM4ODEsImV4cCI6MjA4MjkxOTg4MX0.ZOP4W0sIbv9BEnsQrthR6EfvDXJxtaYfSgNoGok8OsQ';
     
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -476,8 +875,9 @@
 
       if (pageLoading) {
         return (
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-            <div style={{ fontSize: '1.5rem' }}>Loading...</div>
+          <div className="page-loader">
+            <Loader2 />
+            <div className="page-loader-text">Loading Banks...</div>
           </div>
         );
       }
@@ -488,12 +888,15 @@
             <div className="header-content">
               <div className="header-left">
                 <button className="back-btn" onClick={() => window.location.href = 'dashboard.html'}>
-                  ← Back
+                  <ArrowLeft /> Back
                 </button>
-                <div className="header-title">My Banks</div>
+                <div className="header-title">
+                  <Landmark />
+                  My Banks
+                </div>
               </div>
               <button className="add-bank-btn" onClick={() => setShowModal(true)}>
-                + Add Bank
+                <Plus /> Add Bank
               </button>
             </div>
           </header>
@@ -501,7 +904,9 @@
           <div className="container">
             {bankAccounts.length === 0 ? (
               <div className="empty-state">
-                <div className="empty-state-icon">🏦</div>
+                <div className="empty-state-icon">
+                  <Landmark />
+                </div>
                 <h3>No bank accounts yet</h3>
                 <p>Add your South African bank account to withdraw funds</p>
                 <button 
@@ -509,6 +914,7 @@
                   style={{ marginTop: '2rem', padding: '0.875rem 2rem' }}
                   onClick={() => setShowModal(true)}
                 >
+                  <Plus />
                   Add Your First Bank
                 </button>
               </div>
@@ -517,20 +923,35 @@
                 {bankAccounts.map((bank) => (
                   <div key={bank.id} className="bank-card">
                     <div className="bank-header">
-                      <div className="bank-icon">🏦</div>
+                      <div className="bank-icon">
+                        <Landmark />
+                      </div>
                       <button 
                         className="delete-btn"
                         onClick={() => handleDeleteBank(bank.id)}
                       >
+                        <Trash2 />
                         Remove
                       </button>
                     </div>
                     <div className="bank-name">{bank.bank_name}</div>
                     <div className="bank-details">
-                      <div><strong>Account Holder:</strong> {bank.account_holder}</div>
-                      <div><strong>Account Number:</strong> <span className="account-number">{bank.account_number}</span></div>
-                      <div><strong>Account Type:</strong> {bank.account_type.charAt(0).toUpperCase() + bank.account_type.slice(1)}</div>
-                      <div><strong>Branch Code:</strong> {bank.branch_code}</div>
+                      <div>
+                        <User />
+                        <span><strong>Account Holder:</strong> {bank.account_holder}</span>
+                      </div>
+                      <div>
+                        <Hash />
+                        <span><strong>Account Number:</strong> <span className="account-number">{bank.account_number}</span></span>
+                      </div>
+                      <div>
+                        <CreditCard />
+                        <span><strong>Account Type:</strong> {bank.account_type.charAt(0).toUpperCase() + bank.account_type.slice(1)}</span>
+                      </div>
+                      <div>
+                        <GitBranch />
+                        <span><strong>Branch Code:</strong> {bank.branch_code}</span>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -538,19 +959,40 @@
             )}
           </div>
 
-          <div className={`modal ${showModal ? 'show' : ''}`}>
+          <div className={`modal ${showModal ? 'show' : ''}`} onClick={(e) => {
+            if (e.target.className.includes('modal')) setShowModal(false);
+          }}>
             <div className="modal-content">
               <div className="modal-header">
-                <div className="modal-title">Add Bank Account</div>
-                <button className="close-btn" onClick={() => setShowModal(false)}>×</button>
+                <div className="modal-title">
+                  <Landmark />
+                  Add Bank Account
+                </div>
+                <button className="close-btn" onClick={() => setShowModal(false)}>
+                  <X />
+                </button>
               </div>
 
-              {error && <div className="error show">{error}</div>}
-              {success && <div className="success show">{success}</div>}
+              {error && (
+                <div className="error show">
+                  <AlertCircle />
+                  <span>{error}</span>
+                </div>
+              )}
+              
+              {success && (
+                <div className="success show">
+                  <CheckCircle />
+                  <span>{success}</span>
+                </div>
+              )}
 
               <form onSubmit={handleAddBank}>
                 <div className="form-group">
-                  <label>Bank Name</label>
+                  <label>
+                    <Building2 />
+                    Bank Name
+                  </label>
                   <select
                     value={bankName}
                     onChange={(e) => setBankName(e.target.value)}
@@ -565,7 +1007,10 @@
                 </div>
 
                 <div className="form-group">
-                  <label>Account Holder Name</label>
+                  <label>
+                    <User />
+                    Account Holder Name
+                  </label>
                   <input
                     type="text"
                     value={accountHolder}
@@ -577,7 +1022,10 @@
                 </div>
 
                 <div className="form-group">
-                  <label>Account Number</label>
+                  <label>
+                    <Hash />
+                    Account Number
+                  </label>
                   <input
                     type="text"
                     value={accountNumber}
@@ -589,7 +1037,10 @@
                 </div>
 
                 <div className="form-group">
-                  <label>Account Type</label>
+                  <label>
+                    <CreditCard />
+                    Account Type
+                  </label>
                   <select
                     value={accountType}
                     onChange={(e) => setAccountType(e.target.value)}
@@ -603,7 +1054,10 @@
                 </div>
 
                 <div className="form-group">
-                  <label>Branch Code</label>
+                  <label>
+                    <GitBranch />
+                    Branch Code
+                  </label>
                   <input
                     type="text"
                     value={branchCode}
@@ -616,7 +1070,17 @@
                 </div>
 
                 <button type="submit" className="submit-btn" disabled={loading}>
-                  {loading ? 'Adding...' : 'Add Bank Account'}
+                  {loading ? (
+                    <>
+                      <Loader2 />
+                      Adding...
+                    </>
+                  ) : (
+                    <>
+                      <Check />
+                      Add Bank Account
+                    </>
+                  )}
                 </button>
               </form>
             </div>
