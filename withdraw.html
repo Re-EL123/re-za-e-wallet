@@ -587,8 +587,8 @@
     // - Bank APIs directly
     // - Payout services like Stitch, Ozow, or PayFast
     // - Manual bank transfers
-    const IKHOKHA_APP_ID = 'process.env.IKHOKHA_APP_ID';
-    const IKHOKHA_SECRET = 'process.env.IKHOKHA_SECRET';
+    const IKHOKHA_APP_ID = 'IKUYN0WT5869GD75KEWWTPNU13BAEYP6';
+    const IKHOKHA_SECRET = 'Ff3y5LZDWyWafDhMK4qBmwzTQpQwKWaL';
 
     function WithdrawPage() {
       const [user, setUser] = useState(null);
@@ -639,35 +639,28 @@
       }, []);
 
       const processPayoutTransaction = async (withdrawAmount, selectedBankData) => {
-  // Replace entire function with:
-  const payoutData = {
-    amount: withdrawAmount,
-    bankAccount: selectedBankData,
-    userId: user.id
-  };
-
-  const response = await fetch('/api/ikhokha-withdraw', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payoutData)
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || 'Payout failed');
-  }
-
-  const result = await response.json();
-  
-  if (result.payoutUrl) {
-    // Redirect to iKhokha payout page
-    window.location.href = result.payoutUrl;
-    return null;  // Stop execution - user redirected
-  }
-  
-  return result;
-};
-
+        try {
+          // In a production environment, you would integrate with a payout service here
+          // For example: Stitch, Ozow Payout API, or bank APIs
+          
+          // Example structure for payout API call:
+          /*
+          const payoutData = {
+            amount: withdrawAmount * 100, // Convert to cents
+            currency: 'ZAR',
+            reference: `WD-${user.id.substring(0, 8)}-${Date.now()}`,
+            description: `Withdrawal to ${selectedBankData.bank_name}`,
+            beneficiary: {
+              account_number: selectedBankData.account_number,
+              account_type: selectedBankData.account_type,
+              bank_name: selectedBankData.bank_name,
+              account_holder: user.email
+            },
+            metadata: {
+              user_id: user.id,
+              wallet_id: wallet.id
+            }
+          };
 
           const response = await fetch('YOUR_PAYOUT_API_ENDPOINT', {
             method: 'POST',
@@ -744,6 +737,12 @@
           // Step 1: Process the payout transaction through payment gateway
           const payoutResult = await processPayoutTransaction(withdrawAmount, selectedBankData);
           
+          // If payoutResult is null, user was redirected to payment gateway
+          if (payoutResult === null) {
+            // User has been redirected, no further processing needed
+            return;
+          }
+          
           if (!payoutResult.success) {
             throw new Error('Payout transaction failed');
           }
@@ -758,7 +757,12 @@
 
           if (withdrawError) throw withdrawError;
 
-          setSuccess(`Successfully withdrew ${formatCurrency(withdrawAmount)}! Transaction ID: ${payoutResult.transaction_id}`);
+          // Show success message with transaction details
+          const successMessage = payoutResult.status === 'demo_mode' 
+            ? `Demo Mode: Withdrawal of ${formatCurrency(withdrawAmount)} processed! Transaction ID: ${payoutResult.transaction_id}. ${payoutResult.note}`
+            : `Successfully withdrew ${formatCurrency(withdrawAmount)}! Transaction ID: ${payoutResult.transaction_id}`;
+          
+          setSuccess(successMessage);
           setAmount('');
           setSelectedBank('');
 
@@ -770,7 +774,7 @@
 
           setTimeout(() => {
             window.location.href = 'dashboard.html';
-          }, 3000);
+          }, payoutResult.status === 'demo_mode' ? 4000 : 3000);
 
         } catch (err) {
           console.error('[Withdrawal] Error:', err);
