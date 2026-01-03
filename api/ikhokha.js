@@ -14,15 +14,15 @@ export default async function handler(req, res) {
     externalEntityID: user_id || 'reza-wallet',
     amount: Math.round(amount * 1),  // Convert to cents
     currency: 'ZAR',
-    requesterUrl: 'https://re-za-e-wallet-mzansi.vercel.app',
+    requesterUrl: 'https://re-za-e-wallet.vercel.app',
     mode: 'live',
     description: `ReZA Wallet Deposit R${amount}`,
     externalTransactionID: `REZA-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     urls: {
-      callbackUrl: 'https://re-za-e-wallet-mzansi.vercel.app/api/ikhokha-webhook',
-      successPageUrl: 'https://re-za-e-wallet-mzansi.vercel.app/deposit.html?payment=success',
-      failurePageUrl: 'https://re-za-e-wallet-mzansi.vercel.app/deposit.html?payment=failed',
-      cancelUrl: 'https://re-za-e-wallet-mzansi.vercel.app/deposit.html?payment=cancelled'
+      callbackUrl: 'https://re-za-e-wallet.vercel.app/api/ikhokha-webhook',
+      successPageUrl: 'https://re-za-e-wallet.vercel.app/deposit.html?payment=success',
+      failurePageUrl: 'https://re-za-e-wallet-mzansi.app/deposit.html?payment=failed',
+      cancelUrl: 'https://re-za-e-wallet-mzansi.app/deposit.html?payment=cancelled'
     }
   };
 
