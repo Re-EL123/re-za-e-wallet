@@ -639,28 +639,35 @@
       }, []);
 
       const processPayoutTransaction = async (withdrawAmount, selectedBankData) => {
-        try {
-          // In a production environment, you would integrate with a payout service here
-          // For example: Stitch, Ozow Payout API, or bank APIs
-          
-          // Example structure for payout API call:
-          /*
-          const payoutData = {
-            amount: withdrawAmount * 100, // Convert to cents
-            currency: 'ZAR',
-            reference: `WD-${user.id.substring(0, 8)}-${Date.now()}`,
-            description: `Withdrawal to ${selectedBankData.bank_name}`,
-            beneficiary: {
-              account_number: selectedBankData.account_number,
-              account_type: selectedBankData.account_type,
-              bank_name: selectedBankData.bank_name,
-              account_holder: user.email
-            },
-            metadata: {
-              user_id: user.id,
-              wallet_id: wallet.id
-            }
-          };
+  // Replace entire function with:
+  const payoutData = {
+    amount: withdrawAmount,
+    bankAccount: selectedBankData,
+    userId: user.id
+  };
+
+  const response = await fetch('/api/ikhokha-withdraw', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payoutData)
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Payout failed');
+  }
+
+  const result = await response.json();
+  
+  if (result.payoutUrl) {
+    // Redirect to iKhokha payout page
+    window.location.href = result.payoutUrl;
+    return null;  // Stop execution - user redirected
+  }
+  
+  return result;
+};
+
 
           const response = await fetch('YOUR_PAYOUT_API_ENDPOINT', {
             method: 'POST',
